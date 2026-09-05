@@ -11,6 +11,7 @@ class THELASTSIDEQUEST_API AQuestProgressTrigger : public ATriggerBox
     GENERATED_BODY()
 public:
     AQuestProgressTrigger();
+    void Configure(ESideQuestStep InRequiredStep, ESideQuestStep InResultStep);
 protected:
     UFUNCTION() void HandleOverlap(AActor* OverlappedActor, AActor* OtherActor);
     UPROPERTY(EditAnywhere, Category="Quest") ESideQuestStep RequiredStep = ESideQuestStep::FollowForestClue;

@@ -11,4 +11,6 @@ class THELASTSIDEQUEST_API ASideQuestGameMode : public AGameModeBase
 
 public:
     ASideQuestGameMode();
+protected:
+    virtual void BeginPlay() override;
 };

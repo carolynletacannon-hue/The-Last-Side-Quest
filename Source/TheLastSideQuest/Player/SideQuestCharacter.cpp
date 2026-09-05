@@ -189,7 +189,7 @@ void ASideQuestCharacter::FinishDialogue()
 {
     if (bDialogueAdvancesQuest)
         if (ASideQuestGameState* State = GetWorld()->GetGameState<ASideQuestGameState>()) State->TryAdvanceQuest(DialogueExpectedStep, DialogueResultStep);
-    if (DialogueSource) DialogueSource->OnInteractionCompleted();
+    if (DialogueSource) DialogueSource->CompleteInteraction();
     ActiveDialogue.Reset(); DialogueIndex = INDEX_NONE; DialogueSource = nullptr; CurrentInteractable = nullptr;
     RefreshNearbyInteractable();
 }
