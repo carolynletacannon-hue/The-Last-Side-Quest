@@ -13,6 +13,8 @@ public class TheLastSideQuest : ModuleRules
             "Engine",
             "InputCore",
             "EnhancedInput",
+            "AIModule",
+            "NavigationSystem",
             "UMG"
         });
 
