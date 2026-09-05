@@ -1,22 +1,40 @@
-# Codex — Start Here
+# Codex Start Here
 
-Read `AGENTS.md`, `README.md`, `docs/GAME_DESIGN.md`, and `docs/ROADMAP.md` first.
+Read these files before changing code:
 
-Then inspect the repository before coding.
+1. `AGENTS.md`
+2. `README.md`
+3. `docs/GAME_DESIGN.md`
+4. `docs/ART_DIRECTION.md`
+5. `docs/ASSET_PLAN.md`
+6. `docs/DIALOGUE.md`
+7. the current GitHub issue
+
+This project now targets **Unreal Engine 5.8**, not React/Three.js.
 
 ## First task
-Implement the player foundation only:
-- Third-person player movement using WASD
-- Camera that follows the player and can rotate with mouse input
-- Basic grounding/collision suitable for a small handcrafted level
-- Reserve E for interaction and left mouse/button for attack, but do not build dialogue or combat yet
-- Keep the placeholder world simple
-- Do not add inventory, progression, equipment, save systems, or generalized RPG frameworks
-- Keep the game runnable throughout
-- Run the build before finishing
 
-When done, summarize:
-1. Files changed
-2. Controls
-3. Any known limitations
-4. The next smallest recommended task
+Start with GitHub Issue #1 only: player movement and third-person camera.
+
+Before implementing:
+
+- inspect the `.uproject`, `Config`, and `Source` structure
+- verify the Unreal 5.8 C++ project layout is valid
+- prefer the standard Unreal Third Person approach using `ACharacter`, `CharacterMovement`, SpringArm/Camera, and Enhanced Input
+- expose asset references/tuning cleanly for later Blueprint/editor hookup
+- do not begin combat, quest, dialogue, or level-building work yet
+
+## Visual requirement
+
+Even at prototype stage, structure the player/camera and rendering setup so the project can use the visual target in `ART_DIRECTION.md`: Lumen, Nanite-ready environment assets, Virtual Shadow Maps, volumetrics, PBR materials, and cinematic post-processing.
+
+Placeholders are fine for functionality. Do not mistake placeholders for the final art plan.
+
+## Finish condition
+
+When the phase is complete:
+
+- compile/test with Unreal tooling if available
+- report exactly what changed
+- list any Unreal Editor steps the user must perform because they cannot be represented as text/source assets
+- stop and do not start Issue #2
