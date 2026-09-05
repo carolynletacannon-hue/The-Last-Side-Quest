@@ -119,7 +119,7 @@ void ASideQuestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
     EnhancedInput->BindAction(MoveRightAction, ETriggerEvent::Triggered, this, &ThisClass::MoveRight);
     EnhancedInput->BindAction(LookYawAction, ETriggerEvent::Triggered, this, &ThisClass::LookYaw);
     EnhancedInput->BindAction(LookPitchAction, ETriggerEvent::Triggered, this, &ThisClass::LookPitch);
-    EnhancedInput->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+    EnhancedInput->BindAction(JumpAction, ETriggerEvent::Started, this, &ThisClass::StartJump);
     EnhancedInput->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
     EnhancedInput->BindAction(AttackAction, ETriggerEvent::Started, this, &ThisClass::Attack);
     EnhancedInput->BindAction(RestartAction, ETriggerEvent::Started, this, &ThisClass::RestartAfterDeath);
@@ -170,10 +170,19 @@ void ASideQuestCharacter::BeginDialogue(const TArray<FSideQuestDialogueLine>& Li
     ESideQuestStep ExpectedStep, ESideQuestStep ResultStep, bool bShouldAdvance)
 {
     if (IsInDialogue()) return;
+
     DialogueSource = Source; ActiveDialogue = Lines; DialogueExpectedStep = ExpectedStep;
     DialogueResultStep = ResultStep; bDialogueAdvancesQuest = bShouldAdvance;
     DialogueIndex = ActiveDialogue.IsEmpty() ? INDEX_NONE : 0;
-    if (DialogueIndex == INDEX_NONE) FinishDialogue();
+    if (IsInDialogue())
+    {
+        StopJumping();
+        GetCharacterMovement()->StopMovementImmediately();
+    }
+    else
+    {
+        FinishDialogue();
+    }
 }
 
 void ASideQuestCharacter::FinishDialogue()
@@ -182,16 +191,21 @@ void ASideQuestCharacter::FinishDialogue()
         if (ASideQuestGameState* State = GetWorld()->GetGameState<ASideQuestGameState>()) State->TryAdvanceQuest(DialogueExpectedStep, DialogueResultStep);
     if (DialogueSource) DialogueSource->OnInteractionCompleted();
     ActiveDialogue.Reset(); DialogueIndex = INDEX_NONE; DialogueSource = nullptr; CurrentInteractable = nullptr;
+    RefreshNearbyInteractable();
 }
 
 void ASideQuestCharacter::MoveForward(const FInputActionValue& Value)
 {
+    if (IsDead() || IsInDialogue()) return;
+
     const FRotator ControlRotation = Controller ? Controller->GetControlRotation() : FRotator::ZeroRotator;
     AddMovementInput(FRotationMatrix(FRotator(0.0f, ControlRotation.Yaw, 0.0f)).GetUnitAxis(EAxis::X), Value.Get<float>());
 }
 
 void ASideQuestCharacter::MoveRight(const FInputActionValue& Value)
 {
+    if (IsDead() || IsInDialogue()) return;
+
     const FRotator ControlRotation = Controller ? Controller->GetControlRotation() : FRotator::ZeroRotator;
     AddMovementInput(FRotationMatrix(FRotator(0.0f, ControlRotation.Yaw, 0.0f)).GetUnitAxis(EAxis::Y), Value.Get<float>());
 }
@@ -206,6 +220,14 @@ void ASideQuestCharacter::LookPitch(const FInputActionValue& Value)
     AddControllerPitchInput(Value.Get<float>());
 }
 
+void ASideQuestCharacter::StartJump()
+{
+    if (!IsDead() && !IsInDialogue())
+    {
+        Jump();
+    }
+}
+
 bool ASideQuestCharacter::IsDead() const
 {
     return HealthComponent && HealthComponent->IsDead();
@@ -214,7 +236,7 @@ bool ASideQuestCharacter::IsDead() const
 void ASideQuestCharacter::Attack()
 {
     const float CurrentTime = GetWorld()->GetTimeSeconds();
-    if (IsDead() || CurrentTime < NextAttackTime)
+    if (IsDead() || IsInDialogue() || CurrentTime < NextAttackTime)
     {
         return;
     }
