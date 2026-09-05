@@ -16,6 +16,10 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "InputCoreTypes.h"
 #include "Kismet/GameplayStatics.h"
+#include "Interaction/QuestInteractableActor.h"
+#include "Interaction/SideQuestInteractable.h"
+#include "Quest/SideQuestGameState.h"
+#include "TimerManager.h"
 
 ASideQuestCharacter::ASideQuestCharacter()
 {
@@ -54,6 +58,7 @@ ASideQuestCharacter::ASideQuestCharacter()
     JumpAction = CreateDefaultSubobject<UInputAction>(TEXT("JumpAction"));
     AttackAction = CreateDefaultSubobject<UInputAction>(TEXT("AttackAction"));
     RestartAction = CreateDefaultSubobject<UInputAction>(TEXT("RestartAction"));
+    InteractAction = CreateDefaultSubobject<UInputAction>(TEXT("InteractAction"));
 
     MoveForwardAction->ValueType = EInputActionValueType::Axis1D;
     MoveRightAction->ValueType = EInputActionValueType::Axis1D;
@@ -62,6 +67,7 @@ ASideQuestCharacter::ASideQuestCharacter()
     JumpAction->ValueType = EInputActionValueType::Boolean;
     AttackAction->ValueType = EInputActionValueType::Boolean;
     RestartAction->ValueType = EInputActionValueType::Boolean;
+    InteractAction->ValueType = EInputActionValueType::Boolean;
 
     DefaultMappingContext->MapKey(MoveForwardAction, EKeys::W);
     DefaultMappingContext->MapKey(MoveForwardAction, EKeys::Gamepad_LeftY);
@@ -82,6 +88,8 @@ ASideQuestCharacter::ASideQuestCharacter()
     DefaultMappingContext->MapKey(AttackAction, EKeys::Gamepad_RightTrigger);
     DefaultMappingContext->MapKey(RestartAction, EKeys::R);
     DefaultMappingContext->MapKey(RestartAction, EKeys::Gamepad_Special_Right);
+    DefaultMappingContext->MapKey(InteractAction, EKeys::E);
+    DefaultMappingContext->MapKey(InteractAction, EKeys::Gamepad_FaceButton_Left);
 }
 
 void ASideQuestCharacter::BeginPlay()
@@ -99,6 +107,7 @@ void ASideQuestCharacter::BeginPlay()
             InputSubsystem->AddMappingContext(DefaultMappingContext, 0);
         }
     }
+    GetWorldTimerManager().SetTimer(InteractionScanTimer, this, &ThisClass::RefreshNearbyInteractable, 0.1f, true, 0.0f);
 }
 
 void ASideQuestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -114,6 +123,65 @@ void ASideQuestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
     EnhancedInput->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
     EnhancedInput->BindAction(AttackAction, ETriggerEvent::Started, this, &ThisClass::Attack);
     EnhancedInput->BindAction(RestartAction, ETriggerEvent::Started, this, &ThisClass::RestartAfterDeath);
+    EnhancedInput->BindAction(InteractAction, ETriggerEvent::Started, this, &ThisClass::Interact);
+}
+
+void ASideQuestCharacter::RefreshNearbyInteractable()
+{
+    if (IsDead() || IsInDialogue()) return;
+    CurrentInteractable = nullptr;
+    TArray<FOverlapResult> Results;
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(InteractionScan), false, this);
+    if (!GetWorld()->OverlapMultiByObjectType(Results, GetActorLocation(), FQuat::Identity,
+        FCollisionObjectQueryParams::AllObjects, FCollisionShape::MakeSphere(InteractionRadius), Params)) return;
+    float BestDistanceSq = TNumericLimits<float>::Max();
+    for (const FOverlapResult& Result : Results)
+    {
+        AActor* Candidate = Result.GetActor();
+        if (Candidate && Candidate->Implements<USideQuestInteractable>() &&
+            ISideQuestInteractable::Execute_CanInteract(Candidate, this))
+        {
+            const float DistanceSq = FVector::DistSquared(GetActorLocation(), Candidate->GetActorLocation());
+            if (DistanceSq < BestDistanceSq) { BestDistanceSq = DistanceSq; CurrentInteractable = Candidate; }
+        }
+    }
+}
+
+void ASideQuestCharacter::Interact()
+{
+    if (IsDead()) return;
+    if (IsInDialogue())
+    {
+        ++DialogueIndex;
+        if (!ActiveDialogue.IsValidIndex(DialogueIndex)) FinishDialogue();
+        return;
+    }
+    if (IsValid(CurrentInteractable)) ISideQuestInteractable::Execute_Interact(CurrentInteractable, this);
+}
+
+FText ASideQuestCharacter::GetCurrentInteractionLabel() const
+{
+    return IsValid(CurrentInteractable) ? ISideQuestInteractable::Execute_GetInteractionLabel(CurrentInteractable) : FText::GetEmpty();
+}
+FText ASideQuestCharacter::GetDialogueSpeaker() const { return ActiveDialogue.IsValidIndex(DialogueIndex) ? ActiveDialogue[DialogueIndex].Speaker : FText::GetEmpty(); }
+FText ASideQuestCharacter::GetDialogueText() const { return ActiveDialogue.IsValidIndex(DialogueIndex) ? ActiveDialogue[DialogueIndex].Text : FText::GetEmpty(); }
+
+void ASideQuestCharacter::BeginDialogue(const TArray<FSideQuestDialogueLine>& Lines, AQuestInteractableActor* Source,
+    ESideQuestStep ExpectedStep, ESideQuestStep ResultStep, bool bShouldAdvance)
+{
+    if (IsInDialogue()) return;
+    DialogueSource = Source; ActiveDialogue = Lines; DialogueExpectedStep = ExpectedStep;
+    DialogueResultStep = ResultStep; bDialogueAdvancesQuest = bShouldAdvance;
+    DialogueIndex = ActiveDialogue.IsEmpty() ? INDEX_NONE : 0;
+    if (DialogueIndex == INDEX_NONE) FinishDialogue();
+}
+
+void ASideQuestCharacter::FinishDialogue()
+{
+    if (bDialogueAdvancesQuest)
+        if (ASideQuestGameState* State = GetWorld()->GetGameState<ASideQuestGameState>()) State->TryAdvanceQuest(DialogueExpectedStep, DialogueResultStep);
+    if (DialogueSource) DialogueSource->OnInteractionCompleted();
+    ActiveDialogue.Reset(); DialogueIndex = INDEX_NONE; DialogueSource = nullptr; CurrentInteractable = nullptr;
 }
 
 void ASideQuestCharacter::MoveForward(const FInputActionValue& Value)

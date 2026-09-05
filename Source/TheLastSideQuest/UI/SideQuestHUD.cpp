@@ -4,10 +4,33 @@
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
 #include "Player/SideQuestCharacter.h"
+#include "Quest/SideQuestGameState.h"
+#include "UI/InteractionDialogueWidget.h"
+
+void ASideQuestHUD::BeginPlay()
+{
+    Super::BeginPlay();
+    if (APlayerController* PC = GetOwningPlayerController())
+    {
+        InteractionWidget = CreateWidget<UInteractionDialogueWidget>(PC, UInteractionDialogueWidget::StaticClass());
+        if (InteractionWidget) InteractionWidget->AddToViewport();
+    }
+}
+
+void ASideQuestHUD::UpdateInteractionUI()
+{
+    ASideQuestCharacter* Player = Cast<ASideQuestCharacter>(GetOwningPawn());
+    ASideQuestGameState* State = GetWorld() ? GetWorld()->GetGameState<ASideQuestGameState>() : nullptr;
+    if (!InteractionWidget || !Player || !State) return;
+    InteractionWidget->SetObjective(State->GetObjectiveText());
+    InteractionWidget->SetPrompt(Player->GetCurrentInteractionLabel(), Player->HasAvailableInteraction() && !Player->IsInDialogue());
+    InteractionWidget->SetDialogue(Player->GetDialogueSpeaker(), Player->GetDialogueText(), Player->IsInDialogue());
+}
 
 void ASideQuestHUD::DrawHUD()
 {
     Super::DrawHUD();
+    UpdateInteractionUI();
 
     const ASideQuestCharacter* Player = GetOwningPawn() ? Cast<ASideQuestCharacter>(GetOwningPawn()) : nullptr;
     if (!Player || !Canvas)

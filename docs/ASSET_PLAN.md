@@ -48,6 +48,15 @@ Do not build final art from primitives. Use placeholders only until the matching
 - Goblin, slime, and skeleton Blueprint children share one C++ enemy and expose mesh/animation plus attack, hit, and death presentation events.
 - No third-party combat assets are committed. Record source and license details here when the final character, animation, sound, or VFX assets are selected.
 
+## Phase 3 presentation hooks
+
+- `AQuestInteractableActor` Blueprint children provide meshes, animation/audio reactions, labels, and
+  the authoritative dialogue from `DIALOGUE.md`; C++ owns interaction and quest progression.
+- Mildred, the guard, and the goblin may share a compatible NPC rig. The inscription, lever, and
+  Mittens pickup need only suitable static/skeletal presentation assets in their final areas.
+- No third-party NPC, prop, UI, or audio assets are committed in Phase 3. Record their source and
+  license here when selected.
+
 ## Source policy
 
 Prefer Epic Fab / Unreal Marketplace compatible assets with clear licenses. Megascans may be useful for rocks, surfaces and environmental detail when style-consistent. Do not commit third-party paid/licensed source assets to Git unless their terms explicitly allow repository distribution.
