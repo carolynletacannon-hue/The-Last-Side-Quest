@@ -29,6 +29,7 @@ Do not build final art from primitives. Use placeholders only until the matching
    - slime/creature
    - skeleton
    - compatible attack/death animations
+   - Phase 2 exposes all three as presentation/stat variants of `ASideQuestEnemy`; implement its attack, hit, and death presentation events in thin Blueprint children
 
 6. **Mittens**
    - believable orange domestic cat model
@@ -40,6 +41,12 @@ Do not build final art from primitives. Use placeholders only until the matching
    - torch/fire/embers
    - ambient village/forest/ruins beds
    - disproportionately epic boss music
+
+## Phase 2 presentation hooks
+
+- The player Blueprint can assign a sword attack montage and implement attack-impact, hit, and death presentation events.
+- Goblin, slime, and skeleton Blueprint children share one C++ enemy and expose mesh/animation plus attack, hit, and death presentation events.
+- No third-party combat assets are committed. Record source and license details here when the final character, animation, sound, or VFX assets are selected.
 
 ## Source policy
 
