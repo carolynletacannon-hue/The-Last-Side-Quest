@@ -54,7 +54,7 @@ void APhase4World::BeginPlay()
         UStaticMeshComponent* Floor = NewObject<UStaticMeshComponent>(this);
         Floor->RegisterComponent(); Floor->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
         Floor->SetStaticMesh(GroundCollisionMesh); Floor->SetWorldLocation(Route[Index]);
-        Floor->SetWorldScale3D(Index >= 11 ? FVector(14,14,.8f) : FVector(14,7,.8f));
+        Floor->SetWorldScale3D(Index >= 10 ? FVector(14,28,.8f) : FVector(14,7,.8f));
         Floor->SetCollisionProfileName(TEXT("BlockAll"));
         UMaterialInterface* AreaMaterial = Index < 3 ? VillageGroundMaterial : (Index < 7 ? ForestGroundMaterial : RuinsGroundMaterial);
         if (AreaMaterial) Floor->SetMaterial(0, AreaMaterial);
@@ -243,8 +243,11 @@ void APhase4World::BeginPlay()
     World->SpawnActor<ASkyAtmosphere>();
 
     ANavMeshBoundsVolume* NavBounds = World->SpawnActor<ANavMeshBoundsVolume>(FVector(8200,0,200), FRotator::ZeroRotator);
-    NavBounds->SetActorScale3D({168,24,6});
-    if (UNavigationSystemV1* Navigation = FNavigationSystem::GetCurrent<UNavigationSystemV1>(World)) Navigation->OnNavigationBoundsUpdated(NavBounds);
+    if (NavBounds)
+    {
+        NavBounds->SetActorScale3D({168,24,6});
+        if (UNavigationSystemV1* Navigation = FNavigationSystem::GetCurrent<UNavigationSystemV1>(World)) Navigation->OnNavigationBoundsUpdated(NavBounds);
+    }
 }
 
 void APhase4World::OpenRuinsGate()

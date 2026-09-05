@@ -13,6 +13,7 @@
 #include "InputModifiers.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/PlayerStart.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "InputCoreTypes.h"
 #include "Kismet/GameplayStatics.h"
@@ -106,6 +107,12 @@ float ASideQuestCharacter::TakeDamage(float DamageAmount, const FDamageEvent& Da
 void ASideQuestCharacter::BeginPlay()
 {
     Super::BeginPlay();
+
+    if (!UGameplayStatics::GetActorOfClass(this, APlayerStart::StaticClass()) &&
+        GetActorLocation().IsNearlyZero(1.0f))
+    {
+        SetActorLocation(FVector(0.0f, 0.0f, 80.0f), false, nullptr, ETeleportType::TeleportPhysics);
+    }
 
     HealthComponent->OnHealthChanged.AddDynamic(this, &ThisClass::HandleHealthChanged);
     HealthComponent->OnDeath.AddDynamic(this, &ThisClass::HandleDeath);

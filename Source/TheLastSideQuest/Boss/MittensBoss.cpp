@@ -30,6 +30,8 @@ AMittensBoss::AMittensBoss()
     EntranceTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("BossEntranceTrigger"));
     EntranceTrigger->SetupAttachment(RootComponent);
     EntranceTrigger->SetBoxExtent({100, 650, 250});
+    EntranceTrigger->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    EntranceTrigger->SetGenerateOverlapEvents(true);
     EntranceTrigger->SetCollisionResponseToAllChannels(ECR_Ignore);
     EntranceTrigger->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
@@ -48,8 +50,10 @@ void AMittensBoss::BeginPlay()
 {
     Super::BeginPlay();
     ArenaCenter = GetActorLocation() + ArenaCenterOffset;
-    EntranceTrigger->SetRelativeLocation(EntranceTriggerOffset);
-    EntranceBlocker->SetRelativeLocation(EntranceBlockerOffset);
+    EntranceTrigger->SetWorldLocation(GetActorLocation() + EntranceTriggerOffset);
+    EntranceBlocker->SetWorldLocation(GetActorLocation() + EntranceBlockerOffset);
+    EntranceTrigger->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+    EntranceBlocker->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
     EntranceTrigger->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::HandleEntranceOverlap);
     HealthComponent->OnHealthChanged.AddDynamic(this, &ThisClass::HandleHealthChanged);
     HealthComponent->OnDeath.AddDynamic(this, &ThisClass::HandleDefeat);

@@ -4,6 +4,11 @@
 #include "Components/ActorComponent.h"
 #include "HealthComponent.generated.h"
 
+class AActor;
+class AController;
+class UDamageType;
+class UHealthComponent;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FHealthChangedSignature, UHealthComponent*, HealthComponent,
     float, NewHealth, float, HealthDelta, AActor*, DamageCauser);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDeathSignature, UHealthComponent*, HealthComponent, AActor*, DamageCauser);
