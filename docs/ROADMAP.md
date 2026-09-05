@@ -1,84 +1,60 @@
-# Roadmap — Finish the Game
+# Roadmap
 
-## Phase 1 — Project boots
-- Install dependencies
-- Vite + React + R3F canvas renders
-- Basic placeholder environment
-- Build succeeds
+This game is now built in **Unreal Engine 5.8** with a C++ gameplay foundation and a graphics-first presentation target.
 
-## Phase 2 — Player controller
-- Third-person movement
-- Camera follow/orbit
-- Grounding and collision good enough for small levels
-- Interaction key reserved
+## Phase 1 — Player foundation
+- Unreal project opens cleanly
+- Third-person `ACharacter`
+- CharacterMovement locomotion
+- Spring Arm + camera
+- Enhanced Input mapping
+- clean asset/animation hooks
 
-## Phase 3 — Combat
-- Sword attack
-- Damage and hit feedback
-- Player health
-- Simple death/restart
+## Phase 2 — Combat and enemies
+- sword attack
+- health/damage/death
+- simple reusable enemy actor/character base
+- chase/melee AI
+- lightweight variants for goblin, slime/creature, and skeleton
+- animation/VFX hooks
 
-## Phase 4 — Generic enemies
-- Reusable health/damage behavior
-- Chase and melee attack
-- Slime/goblin/skeleton variants via stats and simple visuals
+## Phase 3 — Interaction, dialogue, quest
+- interact trace/range prompt
+- UMG dialogue box
+- linear dialogue data
+- objective HUD
+- explicit quest-state progression
 
-## Phase 5 — Interaction and dialogue
-- Look/range based interact prompt
-- Linear dialogue box
-- NPC dialogue data
-- Input does not fight with movement/combat
+## Phase 4 — Full playable route
+- village
+- forest
+- ruins
+- boss approach/chamber
+- navigation/collision/lighting pass
+- production-asset replacement begins
 
-## Phase 6 — Quest state
-- Current objective HUD
-- Quest stages advance only from intended triggers
-- Mildred → Guard → Forest → Goblin → Ruins → Mittens → Mildred
+## Phase 5 — Mittens, Devourer of Worlds
+- dramatic reveal/title card
+- pounce
+- scratch combo
+- chaos dash
+- boss health bar
+- defeat/interactable state
+- cinematic lighting/VFX/audio hooks
 
-## Phase 7 — Village
-- Small readable village
-- Mildred, guard, optional villager
-- Start quest and final turn-in
+## Phase 6 — Ending and ship
+- return to Mildred
+- 3 Gold reward gag
+- other-cat joke
+- credits
+- progression-blocker fixes
+- final lighting/material/foliage/VFX/audio pass
+- packaged Windows build
 
-## Phase 8 — Forest
-- Short path
-- 4–6 enemies
-- Environmental clues
-- Goblin survivor
-- Entrance to ruins
+## Visual progression rule
 
-## Phase 9 — Ruins
-- Small dungeon
-- 2–3 skeletons
-- One lever/gate interaction
-- Boss door and ominous text
+Gameplay placeholders are allowed early, but each completed phase should improve presentation rather than leaving every visual decision until the end. Follow `ART_DIRECTION.md` and `ASSET_PLAN.md`.
 
-## Phase 10 — Mittens boss
-- Tiny orange cat visual
-- Boss reveal/title card
-- Boss health bar
-- Pounce, scratch, dash
-- Defeat state and pickup interaction
+## Definition of done
 
-## Phase 11 — Ending
-- Return to Mildred
-- 3 Gold reward joke
-- Final “other cat” exchange
-- Credits
-
-## Phase 12 — Polish and ship
-- Replace only the most distracting placeholders
-- Audio where easy
-- Tune combat difficulty
-- Fix progression blockers
-- Build and deploy
-
-## Scope triage
-If time is running short, cut in this order:
-1. Optional villager
-2. Slime enemy type
-3. Lever puzzle (door can open automatically)
-4. Meow boss attack
-5. Fancy animations
-6. Audio
-
-Never cut: Mildred, quest progression, forest, ruins, Mittens reveal/fight, 3 Gold ending, credits.
+A player can launch the packaged game and play from Mildred's first line through the credits without editor intervention.
