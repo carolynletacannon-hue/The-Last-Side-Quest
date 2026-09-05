@@ -13,6 +13,7 @@ enum class ESideQuestStep : uint8
     EnterRuins,
     OpenRuinsGate,
     ReachMittens,
+    FightMittens,
     PickUpMittens,
     ReturnToMildred,
     Complete

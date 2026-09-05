@@ -31,7 +31,7 @@ editable content below.
 | `BP_Goblin` | Talk to goblin | Talk To Goblin → Enter Ruins | Yes | Goblin: “THE BEAST.” / Player: “…The cat?” / Goblin: “DO NOT SPEAK ITS NAME.” |
 | `BP_Inscription` | Read inscription | Open Ruins Gate → Open Ruins Gate | **No** | Inscription: “HE WHO ENTERS SHALL FACE THE DEVOURER.” / Player: “Mittens?” |
 | `BP_RuinsLever` | Pull lever | Open Ruins Gate → Reach Mittens | Yes | (leave empty) |
-| `BP_MittensPickup` | Pick up Mittens | Pick Up Mittens → Return To Mildred | Yes | (leave empty) |
+| `BP_MittensBoss` (Phase 5) | Pick up Mittens | Pick Up Mittens → Return To Mildred | C++ | Mittens: “Meow.” is presented on defeat; pickup is immediate |
 | `BP_Mildred_Return` | Return Mittens | Return To Mildred → Complete | Yes | Mildred: “Mittens! There you are!” / Player: “That creature has killed at least twelve people.” / Mildred: “Oh, he gets grumpy when he's hungry.” / Quest: “QUEST COMPLETE — THE LAST SIDE QUEST — Reward: 3 Gold” / Mildred: “Would you mind finding my other cat?” / Player: “No.” |
 
 The inscription is deliberately optional and repeatable while the lever is available. Implement
@@ -44,19 +44,18 @@ opening the placeholder gate or hiding the pickup mesh; do not advance quest sta
 |---|---|
 | Forest clue | Follow Forest Clue → Talk To Goblin |
 | Ruins entrance | Enter Ruins → Open Ruins Gate |
-| Mittens chamber threshold | Reach Mittens → Pick Up Mittens |
+| Mittens chamber entrance (Phase 5 boss-owned trigger) | Reach Mittens → Fight Mittens |
 
-The chamber threshold represents reaching the future boss for this phase. It does not spawn, start,
-or implement the boss. In Phase 4, gate the pickup's collision/visibility until Mittens is defeated;
-Phase 3 intentionally leaves it available so the complete quest flow can be tested.
+The old temporary `Reach Mittens → Pick Up Mittens` route trigger was removed in Phase 5. The boss
+owns its entrance trigger; only defeating Mittens advances `Fight Mittens → Pick Up Mittens`, and the
+defeated boss itself owns the pickup interaction. Do not place the old trigger or a separate pickup.
 
 ## Complete test flow
 
 Walk to each actor and verify the gold `[E]` prompt only appears at the actor valid for the current
 objective. Press E once to open dialogue and once per line to continue. While dialogue is visible,
 verify movement, jumping, and melee are blocked but camera orbit still works; after the final line,
-verify those controls and normal interaction prompts return immediately. Follow the three trigger
-volumes at their positions, read the inscription, pull the lever, cross the chamber threshold, pick up
-the placeholder Mittens, and return to the second Mildred actor. Confirm the objective ends at
-`Quest complete — Reward: 3 Gold`. Also verify movement/camera, melee, health/death, and R restart
-still behave as before, including death during dialogue and R restart after death.
+verify those controls and normal interaction prompts return immediately. Follow the forest and ruins
+triggers, read the inscription, and pull the lever. Then use the boss fight, defeat, and pickup flow in
+`PHASE_5_MITTENS_BOSS.md`, stopping at `ReturnToMildred` because the payoff belongs to Phase 6. Also
+verify movement/camera, melee, health/death, and R restart still behave as before.

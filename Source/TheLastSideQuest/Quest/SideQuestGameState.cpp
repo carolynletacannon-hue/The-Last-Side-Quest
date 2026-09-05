@@ -9,6 +9,7 @@ ASideQuestGameState::ASideQuestGameState()
     ObjectiveText.Add(ESideQuestStep::EnterRuins, NSLOCTEXT("Quest", "Ruins", "Follow Mittens' trail into the ruins"));
     ObjectiveText.Add(ESideQuestStep::OpenRuinsGate, NSLOCTEXT("Quest", "Gate", "Read the inscription and open the gate"));
     ObjectiveText.Add(ESideQuestStep::ReachMittens, NSLOCTEXT("Quest", "ReachMittens", "Enter the chamber beyond"));
+    ObjectiveText.Add(ESideQuestStep::FightMittens, NSLOCTEXT("Quest", "FightMittens", "Defeat Mittens, Devourer of Worlds"));
     ObjectiveText.Add(ESideQuestStep::PickUpMittens, NSLOCTEXT("Quest", "Pickup", "Pick up Mittens"));
     ObjectiveText.Add(ESideQuestStep::ReturnToMildred, NSLOCTEXT("Quest", "Return", "Return Mittens to Mildred"));
     ObjectiveText.Add(ESideQuestStep::Complete, NSLOCTEXT("Quest", "Complete", "Quest complete — Reward: 3 Gold"));

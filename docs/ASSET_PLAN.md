@@ -34,6 +34,8 @@ Do not build final art from primitives. Use placeholders only until the matching
 6. **Mittens**
    - believable orange domestic cat model
    - idle, walk/run, jump/pounce and attack-capable animations if possible
+   - Phase 5 uses `AMittensBoss` / `BP_MittensBoss`; add hit reaction and sit/rest animations, and
+     keep damage, quest progression, and attack timing in C++
 
 7. **VFX/audio**
    - sword impacts
@@ -89,6 +91,14 @@ their references.
 The beginner workflow, placement coordinates, lighting ranges, performance guidance, and visual
 acceptance checklist are in `PHASE_4_5_VISUAL_PASS.md`. The expected hands-on editor pass is roughly
 12–20 hours after asset download, plus 4–8 hours if screenshot-level polish is required.
+
+## Phase 5 boss-room hooks
+
+`APhase4World` exposes non-colliding boss floor, monumental column, arch, brazier, rubble, and throne
+slots plus a `MittensBossClass`. Invisible generated floor and boundary boxes remain authoritative.
+Use an ordinary, realistically proportioned orange domestic cat—not armor, mutation, glow, or a
+monster silhouette. No cat, animation, sound, music, Niagara, or licensed chamber asset is committed
+in Phase 5; record the exact source and license here before adding one.
 
 ## Source policy
 

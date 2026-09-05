@@ -29,6 +29,9 @@ public:
     UFUNCTION(BlueprintPure, Category = "Combat|Health")
     bool IsDead() const { return Health <= 0.0f; }
 
+    /** Intended for constructors/setup before BeginPlay initializes current health. */
+    void SetMaxHealth(float NewMaxHealth) { MaxHealth = FMath::Max(1.0f, NewMaxHealth); }
+
     UPROPERTY(BlueprintAssignable, Category = "Combat|Health")
     FHealthChangedSignature OnHealthChanged;
 
