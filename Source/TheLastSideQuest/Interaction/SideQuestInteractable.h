@@ -4,6 +4,8 @@
 #include "UObject/Interface.h"
 #include "SideQuestInteractable.generated.h"
 
+class APawn;
+
 UINTERFACE(BlueprintType)
 class USideQuestInteractable : public UInterface { GENERATED_BODY() };
 

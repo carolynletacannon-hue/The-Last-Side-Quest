@@ -4,6 +4,7 @@
 #include "Enemy/SideQuestEnemy.h"
 #include "GameFramework/DamageType.h"
 #include "Kismet/GameplayStatics.h"
+#include "Navigation/PathFollowingComponent.h"
 
 ASideQuestEnemyAIController::ASideQuestEnemyAIController()
 {
@@ -44,7 +45,17 @@ void ASideQuestEnemyAIController::Tick(float DeltaSeconds)
     const float Distance = FVector::Dist2D(Enemy->GetActorLocation(), Target->GetActorLocation());
     if (Distance > Enemy->GetAttackRange())
     {
-        MoveToActor(Target, Enemy->GetAttackRange() * 0.75f, true, true, true, nullptr, true);
+        const float AcceptanceRadius = Enemy->GetAttackRange() * 0.75f;
+        if (!bUseDirectMoveFallback)
+        {
+            const EPathFollowingRequestResult::Type Result =
+                MoveToActor(Target, AcceptanceRadius, true, true, true, nullptr, true);
+            bUseDirectMoveFallback = Result == EPathFollowingRequestResult::Failed;
+        }
+        if (bUseDirectMoveFallback)
+        {
+            MoveToActor(Target, AcceptanceRadius, true, false, true, nullptr, true);
+        }
         return;
     }
 

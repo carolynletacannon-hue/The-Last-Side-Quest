@@ -7,6 +7,7 @@
 
 class UBoxComponent;
 class UHealthComponent;
+class UPrimitiveComponent;
 class UStaticMeshComponent;
 
 /** The game's single, deliberately small final boss. C++ owns the encounter; Blueprint owns spectacle. */
@@ -59,8 +60,8 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Mittens|Combat", meta=(ClampMin="100")) float AttackHitRadius = 135.0f;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Mittens|Arena", meta=(ClampMin="300")) float ArenaRadius = 1100.0f;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Mittens|Arena") FVector ArenaCenterOffset = FVector(-800, 0, 0);
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Mittens|Arena") FVector EntranceTriggerOffset = FVector(1900, 0, 80);
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Mittens|Arena") FVector EntranceBlockerOffset = FVector(1775, 0, 220);
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Mittens|Arena") FVector EntranceTriggerOffset = FVector(-1600, 0, 80);
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Mittens|Arena") FVector EntranceBlockerOffset = FVector(-1900, 0, 220);
 
 private:
     enum class EAttackState : uint8 { Idle, Telegraph, Moving, Scratch, Recovery };

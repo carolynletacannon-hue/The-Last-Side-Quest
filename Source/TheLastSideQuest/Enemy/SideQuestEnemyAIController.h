@@ -20,4 +20,5 @@ private:
     TWeakObjectPtr<APawn> CombatTarget;
     float LastTargetSeenTime = 0.0f;
     float NextAttackTime = 0.0f;
+    bool bUseDirectMoveFallback = false;
 };
