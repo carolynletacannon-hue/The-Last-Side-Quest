@@ -16,6 +16,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "InputCoreTypes.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Interaction/QuestInteractableActor.h"
 #include "Interaction/SideQuestInteractable.h"
 #include "Quest/SideQuestGameState.h"
@@ -59,6 +60,7 @@ ASideQuestCharacter::ASideQuestCharacter()
     AttackAction = CreateDefaultSubobject<UInputAction>(TEXT("AttackAction"));
     RestartAction = CreateDefaultSubobject<UInputAction>(TEXT("RestartAction"));
     InteractAction = CreateDefaultSubobject<UInputAction>(TEXT("InteractAction"));
+    QuitAction = CreateDefaultSubobject<UInputAction>(TEXT("QuitAction"));
 
     MoveForwardAction->ValueType = EInputActionValueType::Axis1D;
     MoveRightAction->ValueType = EInputActionValueType::Axis1D;
@@ -68,6 +70,7 @@ ASideQuestCharacter::ASideQuestCharacter()
     AttackAction->ValueType = EInputActionValueType::Boolean;
     RestartAction->ValueType = EInputActionValueType::Boolean;
     InteractAction->ValueType = EInputActionValueType::Boolean;
+    QuitAction->ValueType = EInputActionValueType::Boolean;
 
     DefaultMappingContext->MapKey(MoveForwardAction, EKeys::W);
     DefaultMappingContext->MapKey(MoveForwardAction, EKeys::Gamepad_LeftY);
@@ -90,6 +93,14 @@ ASideQuestCharacter::ASideQuestCharacter()
     DefaultMappingContext->MapKey(RestartAction, EKeys::Gamepad_Special_Right);
     DefaultMappingContext->MapKey(InteractAction, EKeys::E);
     DefaultMappingContext->MapKey(InteractAction, EKeys::Gamepad_FaceButton_Left);
+    DefaultMappingContext->MapKey(QuitAction, EKeys::Escape);
+    DefaultMappingContext->MapKey(QuitAction, EKeys::Gamepad_FaceButton_Right);
+}
+
+float ASideQuestCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
+    AController* EventInstigator, AActor* DamageCauser)
+{
+    return IsGameplayLocked() ? 0.0f : Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
 void ASideQuestCharacter::BeginPlay()
@@ -124,11 +135,12 @@ void ASideQuestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
     EnhancedInput->BindAction(AttackAction, ETriggerEvent::Started, this, &ThisClass::Attack);
     EnhancedInput->BindAction(RestartAction, ETriggerEvent::Started, this, &ThisClass::RestartAfterDeath);
     EnhancedInput->BindAction(InteractAction, ETriggerEvent::Started, this, &ThisClass::Interact);
+    EnhancedInput->BindAction(QuitAction, ETriggerEvent::Started, this, &ThisClass::QuitFromCredits);
 }
 
 void ASideQuestCharacter::RefreshNearbyInteractable()
 {
-    if (IsDead() || IsInDialogue()) return;
+    if (IsDead() || IsInDialogue() || IsGameplayLocked()) { CurrentInteractable = nullptr; return; }
     CurrentInteractable = nullptr;
     TArray<FOverlapResult> Results;
     FCollisionQueryParams Params(SCENE_QUERY_STAT(InteractionScan), false, this);
@@ -152,7 +164,9 @@ void ASideQuestCharacter::Interact()
     if (IsDead()) return;
     if (IsInDialogue())
     {
+        if (GetWorld()->GetTimeSeconds() < NextDialogueAdvanceTime) return;
         ++DialogueIndex;
+        NextDialogueAdvanceTime = GetWorld()->GetTimeSeconds() + 0.15f;
         if (!ActiveDialogue.IsValidIndex(DialogueIndex)) FinishDialogue();
         return;
     }
@@ -174,6 +188,7 @@ void ASideQuestCharacter::BeginDialogue(const TArray<FSideQuestDialogueLine>& Li
     DialogueSource = Source; ActiveDialogue = Lines; DialogueExpectedStep = ExpectedStep;
     DialogueResultStep = ResultStep; bDialogueAdvancesQuest = bShouldAdvance;
     DialogueIndex = ActiveDialogue.IsEmpty() ? INDEX_NONE : 0;
+    NextDialogueAdvanceTime = GetWorld()->GetTimeSeconds() + 0.15f;
     if (IsInDialogue())
     {
         StopJumping();
@@ -185,18 +200,31 @@ void ASideQuestCharacter::BeginDialogue(const TArray<FSideQuestDialogueLine>& Li
     }
 }
 
+void ASideQuestCharacter::BeginEndingDialogue(const TArray<FSideQuestDialogueLine>& Lines)
+{
+    bDialogueEndsGame = true;
+    BeginDialogue(Lines, nullptr, ESideQuestStep::Complete, ESideQuestStep::Complete, false);
+}
+
 void ASideQuestCharacter::FinishDialogue()
 {
     if (bDialogueAdvancesQuest)
         if (ASideQuestGameState* State = GetWorld()->GetGameState<ASideQuestGameState>()) State->TryAdvanceQuest(DialogueExpectedStep, DialogueResultStep);
     if (DialogueSource) DialogueSource->CompleteInteraction();
+    const bool bShouldEndGame = bDialogueEndsGame;
+    bDialogueEndsGame = false;
     ActiveDialogue.Reset(); DialogueIndex = INDEX_NONE; DialogueSource = nullptr; CurrentInteractable = nullptr;
+    if (bShouldEndGame)
+    {
+        if (ASideQuestGameState* State = GetWorld()->GetGameState<ASideQuestGameState>()) State->FinishFinalDialogue();
+        return;
+    }
     RefreshNearbyInteractable();
 }
 
 void ASideQuestCharacter::MoveForward(const FInputActionValue& Value)
 {
-    if (IsDead() || IsInDialogue()) return;
+    if (IsDead() || IsInDialogue() || IsGameplayLocked()) return;
 
     const FRotator ControlRotation = Controller ? Controller->GetControlRotation() : FRotator::ZeroRotator;
     AddMovementInput(FRotationMatrix(FRotator(0.0f, ControlRotation.Yaw, 0.0f)).GetUnitAxis(EAxis::X), Value.Get<float>());
@@ -204,7 +232,7 @@ void ASideQuestCharacter::MoveForward(const FInputActionValue& Value)
 
 void ASideQuestCharacter::MoveRight(const FInputActionValue& Value)
 {
-    if (IsDead() || IsInDialogue()) return;
+    if (IsDead() || IsInDialogue() || IsGameplayLocked()) return;
 
     const FRotator ControlRotation = Controller ? Controller->GetControlRotation() : FRotator::ZeroRotator;
     AddMovementInput(FRotationMatrix(FRotator(0.0f, ControlRotation.Yaw, 0.0f)).GetUnitAxis(EAxis::Y), Value.Get<float>());
@@ -222,7 +250,7 @@ void ASideQuestCharacter::LookPitch(const FInputActionValue& Value)
 
 void ASideQuestCharacter::StartJump()
 {
-    if (!IsDead() && !IsInDialogue())
+    if (!IsDead() && !IsInDialogue() && !IsGameplayLocked())
     {
         Jump();
     }
@@ -236,7 +264,7 @@ bool ASideQuestCharacter::IsDead() const
 void ASideQuestCharacter::Attack()
 {
     const float CurrentTime = GetWorld()->GetTimeSeconds();
-    if (IsDead() || IsInDialogue() || CurrentTime < NextAttackTime)
+    if (IsDead() || IsInDialogue() || IsGameplayLocked() || CurrentTime < NextAttackTime)
     {
         return;
     }
@@ -272,13 +300,29 @@ void ASideQuestCharacter::Attack()
 
 void ASideQuestCharacter::RestartAfterDeath()
 {
-    if (IsDead())
+    const ASideQuestGameState* State = GetWorld()->GetGameState<ASideQuestGameState>();
+    if (IsDead() || (State && State->GetEndingState() == EEndingPresentationState::Credits))
     {
         if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
         {
             PlayerController->RestartLevel();
         }
     }
+}
+
+void ASideQuestCharacter::QuitFromCredits()
+{
+    const ASideQuestGameState* State = GetWorld()->GetGameState<ASideQuestGameState>();
+    if (State && State->GetEndingState() == EEndingPresentationState::Credits)
+    {
+        UKismetSystemLibrary::QuitGame(this, Cast<APlayerController>(GetController()), EQuitPreference::Quit, false);
+    }
+}
+
+bool ASideQuestCharacter::IsGameplayLocked() const
+{
+    const ASideQuestGameState* State = GetWorld() ? GetWorld()->GetGameState<ASideQuestGameState>() : nullptr;
+    return State && State->HasEndingBegun();
 }
 
 void ASideQuestCharacter::HandleHealthChanged(UHealthComponent* Component, float NewHealth, float HealthDelta, AActor* DamageCauser)

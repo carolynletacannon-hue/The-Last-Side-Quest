@@ -26,8 +26,15 @@ public:
     void CompleteInteraction();
     void Configure(const FText& Label, ESideQuestStep InRequiredStep, ESideQuestStep InResultStep,
         bool bInAdvanceQuest, const TArray<FSideQuestDialogueLine>& InDialogue);
+    void ConfigureEnding(const TArray<FSideQuestDialogueLine>& InReturnDialogue,
+        const TArray<FSideQuestDialogueLine>& InFinalDialogue);
+    const TArray<FSideQuestDialogueLine>& GetFinalDialogue() const { return FinalDialogue; }
 
     UFUNCTION(BlueprintImplementableEvent, Category = "Interaction|Presentation") void OnInteractionCompleted();
+    UFUNCTION(BlueprintImplementableEvent, Category = "Ending|Presentation") void PlayReturnMittensPresentation();
+    UFUNCTION(BlueprintImplementableEvent, Category = "Ending|Presentation") void PlayQuestCompletePresentation();
+    UFUNCTION(BlueprintImplementableEvent, Category = "Ending|Presentation") void PlayFinalJokePresentation();
+    UFUNCTION(BlueprintImplementableEvent, Category = "Ending|Presentation") void PlayEndingTransitionPresentation();
     UPROPERTY(BlueprintAssignable, Category = "Interaction") FInteractionFinished OnInteractionFinished;
 
 protected:
@@ -38,4 +45,9 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction") ESideQuestStep ResultStep = ESideQuestStep::TalkToGuard;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction") bool bAdvanceQuest = true;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dialogue") TArray<FSideQuestDialogueLine> Dialogue;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ending") bool bHandlesMildredEnding = false;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ending") TArray<FSideQuestDialogueLine> ReturnDialogue;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ending") TArray<FSideQuestDialogueLine> FinalDialogue;
+private:
+    UPROPERTY() TObjectPtr<APawn> ActiveInteractor;
 };

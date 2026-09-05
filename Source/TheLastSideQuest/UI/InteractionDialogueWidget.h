@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Quest/SideQuestTypes.h"
 #include "InteractionDialogueWidget.generated.h"
 
 class UTextBlock;
@@ -14,6 +15,7 @@ public:
     void SetObjective(const FText& Text);
     void SetPrompt(const FText& Text, bool bVisible);
     void SetDialogue(const FText& Speaker, const FText& Text, bool bVisible);
+    void SetEndingPresentation(EEndingPresentationState State, float FadeOpacity);
 protected:
     virtual void NativeOnInitialized() override;
 private:
@@ -22,4 +24,7 @@ private:
     UPROPERTY() TObjectPtr<UTextBlock> SpeakerText;
     UPROPERTY() TObjectPtr<UTextBlock> DialogueText;
     UPROPERTY() TObjectPtr<class UBorder> DialoguePanel;
+    UPROPERTY() TObjectPtr<class UBorder> QuestCompletePanel;
+    UPROPERTY() TObjectPtr<class UBorder> FadePanel;
+    UPROPERTY() TObjectPtr<class UVerticalBox> CreditsPanel;
 };

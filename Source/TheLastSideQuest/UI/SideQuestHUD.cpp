@@ -27,6 +27,7 @@ void ASideQuestHUD::UpdateInteractionUI()
     InteractionWidget->SetObjective(State->GetObjectiveText());
     InteractionWidget->SetPrompt(Player->GetCurrentInteractionLabel(), Player->HasAvailableInteraction() && !Player->IsInDialogue());
     InteractionWidget->SetDialogue(Player->GetDialogueSpeaker(), Player->GetDialogueText(), Player->IsInDialogue());
+    InteractionWidget->SetEndingPresentation(State->GetEndingState(), State->GetFadeOpacity());
 }
 
 void ASideQuestHUD::DrawHUD()
@@ -39,6 +40,9 @@ void ASideQuestHUD::DrawHUD()
     {
         return;
     }
+
+    const ASideQuestGameState* State = GetWorld()->GetGameState<ASideQuestGameState>();
+    if (State && State->HasEndingBegun()) return;
 
     const UHealthComponent* Health = Player->GetHealthComponent();
     const float BarX = 40.0f;

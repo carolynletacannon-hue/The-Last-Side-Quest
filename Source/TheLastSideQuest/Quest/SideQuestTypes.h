@@ -19,6 +19,16 @@ enum class ESideQuestStep : uint8
     Complete
 };
 
+UENUM(BlueprintType)
+enum class EEndingPresentationState : uint8
+{
+    None,
+    QuestComplete,
+    FinalDialogue,
+    Fading,
+    Credits
+};
+
 USTRUCT(BlueprintType)
 struct FSideQuestDialogueLine
 {

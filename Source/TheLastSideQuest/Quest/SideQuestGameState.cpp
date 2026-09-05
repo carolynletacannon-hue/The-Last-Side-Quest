@@ -1,4 +1,7 @@
 #include "Quest/SideQuestGameState.h"
+#include "Interaction/QuestInteractableActor.h"
+#include "Player/SideQuestCharacter.h"
+#include "TimerManager.h"
 
 ASideQuestGameState::ASideQuestGameState()
 {
@@ -23,8 +26,59 @@ FText ASideQuestGameState::GetObjectiveText() const
 
 bool ASideQuestGameState::TryAdvanceQuest(ESideQuestStep ExpectedStep, ESideQuestStep NewStep)
 {
-    if (QuestStep != ExpectedStep || static_cast<uint8>(NewStep) < static_cast<uint8>(QuestStep)) return false;
+    if (QuestStep != ExpectedStep || NewStep != static_cast<ESideQuestStep>(static_cast<uint8>(ExpectedStep) + 1)) return false;
     QuestStep = NewStep;
     OnQuestStepChanged.Broadcast(QuestStep);
+    PlayQuestStepPresentation(QuestStep);
     return true;
+}
+
+bool ASideQuestGameState::BeginEndingSequence(ASideQuestCharacter* Player, AQuestInteractableActor* Mildred)
+{
+    if (!Player || !Mildred || EndingState != EEndingPresentationState::None ||
+        !TryAdvanceQuest(ESideQuestStep::ReturnToMildred, ESideQuestStep::Complete))
+    {
+        return false;
+    }
+
+    EndingPlayer = Player;
+    EndingMildred = Mildred;
+    SetEndingState(EEndingPresentationState::QuestComplete);
+    Mildred->PlayQuestCompletePresentation();
+    GetWorldTimerManager().SetTimer(EndingTimer, this, &ThisClass::BeginFinalDialogue, 2.75f, false);
+    return true;
+}
+
+void ASideQuestGameState::BeginFinalDialogue()
+{
+    if (EndingState != EEndingPresentationState::QuestComplete || !IsValid(EndingPlayer) || !IsValid(EndingMildred)) return;
+    SetEndingState(EEndingPresentationState::FinalDialogue);
+    EndingMildred->PlayFinalJokePresentation();
+    EndingPlayer->BeginEndingDialogue(EndingMildred->GetFinalDialogue());
+}
+
+void ASideQuestGameState::FinishFinalDialogue()
+{
+    if (EndingState != EEndingPresentationState::FinalDialogue) return;
+    SetEndingState(EEndingPresentationState::Fading);
+    FadeStartedAt = GetWorld()->GetTimeSeconds();
+    if (EndingMildred) EndingMildred->PlayEndingTransitionPresentation();
+    GetWorldTimerManager().SetTimer(EndingTimer, this, &ThisClass::ShowCredits, 1.25f, false);
+}
+
+void ASideQuestGameState::ShowCredits()
+{
+    if (EndingState == EEndingPresentationState::Fading) SetEndingState(EEndingPresentationState::Credits);
+}
+
+void ASideQuestGameState::SetEndingState(EEndingPresentationState NewState)
+{
+    EndingState = NewState;
+}
+
+float ASideQuestGameState::GetFadeOpacity() const
+{
+    if (EndingState == EEndingPresentationState::Credits) return 1.0f;
+    if (EndingState != EEndingPresentationState::Fading || !GetWorld()) return 0.0f;
+    return FMath::Clamp((GetWorld()->GetTimeSeconds() - FadeStartedAt) / 1.25f, 0.0f, 1.0f);
 }
