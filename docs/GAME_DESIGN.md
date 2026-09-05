@@ -1,115 +1,108 @@
-# Game Design — The Last Side Quest
+# The Last Side Quest — Game Design
 
 ## Premise
-The player is a legendary adventurer who has already saved the kingdom. Their final unfinished quest is to find Mildred's orange cat, Mittens.
 
-## Tone
-Deadpan fantasy comedy. The world treats the player's prior heroism seriously while the current quest becomes absurdly epic.
+The player is a legendary adventurer who has already defeated the Dark Lord and saved the kingdom. One unfinished side quest remains: Mildred's missing orange cat, Mittens.
 
-## Target length
-10–15 minutes.
+The joke is escalation. A mundane missing-cat errand becomes increasingly ominous until the player reaches a cathedral-scale boss room and discovers Mittens on the throne beneath the title:
 
-## Player fantasy
-A ridiculously overqualified hero doing one humiliatingly small errand that escalates into a final-boss-level disaster.
+**MITTENS — DEVOURER OF WORLDS**
 
-## Areas
-### Village
-Small medieval village with Mildred, a guard, and one optional villager. Safe zone. Quest begins and ends here.
+## Target experience
 
-### Forest
-Short path with 4–6 enemies, scratches/fur clues, and one frightened goblin survivor.
+- 10–15 minutes
+- third-person 3D fantasy action RPG
+- one linear quest
+- visually polished small-world presentation
+- comedic writing played completely straight by the world
 
-### Ruins
-Small dark dungeon with 2–3 enemies, one simple lever/gate interaction, and ominous inscriptions about The Devourer.
+## Route
 
-### Boss Room
-Large theatrical chamber with throne, dramatic reveal, and Mittens boss fight.
+### 1. Village
+Warm, safe, recently victorious medieval village. Mildred asks the legendary hero to find Mittens.
 
-## Core characters
-### Player
-Legendary adventurer. Mostly stoic and tired.
+Core beat:
+- Mildred gives quest
+- reward displayed as 3 Gold
+- guard points toward forest
 
-### Mildred
-Sweet elderly woman. Completely unfazed by the player's fame or Mittens' body count.
+### 2. Forest
+Readable storybook forest path with 4–6 lightweight enemies and increasingly absurd environmental evidence that Mittens is dangerous.
 
-Key dialogue:
-- Mildred: “My Mittens has gone missing. Would you find him for me, dear?”
-- Player: “I just killed the Dark Lord.”
-- Mildred: “That's lovely. Mittens likes chicken.”
+Core beats:
+- first combat
+- scratches/damage/clues
+- terrified goblin survivor calls Mittens “the beast”
+- trail leads to ruins
 
-### Guard
-Admires the player, then awkwardly answers cat questions.
+### 3. Ruins
+Small ancient dungeon that dramatically overstates the stakes.
 
-### Goblin survivor
-Terrified witness who calls Mittens “THE BEAST.”
+Core beats:
+- 2–3 enemies
+- one simple lever/gate progression interaction
+- monumental inscription / boss foreshadowing
+- entry into boss chamber
 
-### Mittens
-Tiny orange house cat. Final boss title: **MITTENS — DEVOURER OF WORLDS**.
+### 4. Mittens boss
+A normal-looking orange domestic cat sits on a throne in a wildly cinematic chamber.
 
-## Quest flow
-1. Talk to Mildred.
-2. Objective: Ask around about Mittens.
-3. Talk to guard.
-4. Objective: Search the forest.
-5. Encounter clues and enemies.
-6. Talk to frightened goblin survivor.
-7. Objective: Enter the ruins.
-8. Traverse short ruins and open boss gate.
-9. Fight Mittens.
-10. Interact with defeated Mittens to pick him up.
-11. Return to Mildred.
-12. Quest complete: Reward 3 Gold.
-13. Mildred asks about another cat. Player says “No.”
-14. Credits.
+Boss title:
+**MITTENS — DEVOURER OF WORLDS**
 
-## Combat
-### Player
-- Basic sword slash
-- Short attack cooldown
-- Health bar
-- Simple knockback or hit feedback
-- Death resets current encounter/checkpoint
+Required attacks:
+- Pounce
+- Scratch combo
+- Chaos dash
 
-### Regular enemies
-Keep AI simple: idle/patrol → notice player → chase → attack → die.
+Optional if time permits:
+- Meow shockwave/screen shake
 
-Suggested enemy types:
-- Slime: slow, simple contact/melee attack
-- Goblin: faster melee enemy
-- Skeleton: ruins enemy, slightly tougher
+After defeat, Mittens stops fighting and becomes interactable. Player picks him up.
 
-## Mittens boss
-Boss should be funny but readable, not frustrating.
+### 5. Return to Mildred
+Return/cut back to the village.
 
-Suggested attacks:
-- Pounce: telegraphed leap at player
-- Scratch combo: close-range rapid hits
-- Chaos dash: fast straight-line dash across arena
-- Optional Meow: brief screen shake / shockwave attack
+Mildred is delighted. Player notes that the cat is horrifying. Mildred explains that he gets grumpy when hungry.
 
-Boss should have roughly 3× the health of a regular enemy and clear recovery windows.
+Quest complete:
+**Reward: 3 Gold**
 
-## UI
-Minimal only:
-- Health bar
-- Current quest objective
-- Interaction prompt
-- Dialogue box
-- Boss health bar
-- Quest complete reward card
+Mildred asks whether the player can find her other cat.
 
-## Final scene
-Mildred: “Mittens! There you are!”
-
-Player: “That creature has killed at least twelve people.”
-
-Mildred: “Oh, he gets grumpy when he's hungry.”
-
-QUEST COMPLETE — THE LAST SIDE QUEST
-Reward: 3 Gold
-
-Mildred: “Would you mind finding my other cat?”
-
-Player: “No.”
+Player: **“No.”**
 
 Cut to black. Credits.
+
+## Core systems
+
+Only build what this game needs:
+- third-person locomotion/camera
+- one melee sword attack
+- player health/death/restart
+- simple enemy AI and health
+- interaction prompt
+- linear dialogue
+- current objective HUD
+- quest-state progression
+- boss health/AI
+- ending/credits
+
+## Explicitly out of scope
+
+- inventory
+- equipment
+- crafting
+- loot systems
+- XP or leveling
+- skill trees
+- shops
+- branching dialogue
+- open world
+- procedural quests
+- multiplayer
+- complex save system
+
+## Presentation
+
+Use Unreal Engine 5.8's modern desktop rendering stack and the art direction in `ART_DIRECTION.md`. The environment should be compact enough that detail density, lighting, materials, foliage, VFX and composition can carry the visual quality rather than relying on enormous map size.
