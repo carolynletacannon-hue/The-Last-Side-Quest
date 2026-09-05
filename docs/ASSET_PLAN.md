@@ -57,6 +57,30 @@ Do not build final art from primitives. Use placeholders only until the matching
 - No third-party NPC, prop, UI, or audio assets are committed in Phase 3. Record their source and
   license here when selected.
 
+## Phase 4 world hooks
+
+`APhase4World` is the source-controlled playable layout and fallback presentation. It intentionally
+uses Engine basic-shape meshes only when no project art is assigned, so a clean clone remains
+playable; those gray shapes are **not final art** and must not be used for release screenshots.
+
+Create `BP_Phase4World` and assign one cohesive set of licensed assets to its exposed categories:
+
+- **Art:** a modular walkable ground/road piece for `Ground Mesh`, a compatible tree/column/vertical
+  dressing piece for `Prop Mesh`, and warm village, cool forest, and damp/mossy ruins materials.
+- **Cast:** Phase 3 presentation children for Mildred, guard, survivor, inscription, and lever.
+- **Enemies:** the Phase 2 goblin, slime, and skeleton presentation children. The authored counts are
+  three goblins + two slimes in the forest and three skeletons in the ruins.
+
+Recommended free acquisition shortlist (verify the current Fab license before adding it):
+
+1. Quixel Megascans medieval/European surfaces, forest rocks, trees, moss, and ruined masonry.
+2. Epic-authored free environment collections on Fab for compatible village modular pieces.
+3. A single animation-compatible free character family for NPCs/goblins/skeletons.
+
+Nothing from Fab or Megascans is committed by Phase 4. After selecting exact products, add their
+names, store URLs, license terms, installed project paths, and uses to this file before committing
+their references.
+
 ## Source policy
 
 Prefer Epic Fab / Unreal Marketplace compatible assets with clear licenses. Megascans may be useful for rocks, surfaces and environmental detail when style-consistent. Do not commit third-party paid/licensed source assets to Git unless their terms explicitly allow repository distribution.

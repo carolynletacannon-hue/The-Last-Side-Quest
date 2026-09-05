@@ -3,6 +3,11 @@
 #include "Quest/SideQuestGameState.h"
 
 AQuestProgressTrigger::AQuestProgressTrigger() { OnActorBeginOverlap.AddDynamic(this, &ThisClass::HandleOverlap); }
+void AQuestProgressTrigger::Configure(ESideQuestStep InRequiredStep, ESideQuestStep InResultStep)
+{
+    RequiredStep = InRequiredStep;
+    ResultStep = InResultStep;
+}
 void AQuestProgressTrigger::HandleOverlap(AActor*, AActor* OtherActor)
 {
     if (!Cast<ASideQuestCharacter>(OtherActor)) return;
