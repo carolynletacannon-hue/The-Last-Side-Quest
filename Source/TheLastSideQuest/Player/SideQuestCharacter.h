@@ -22,6 +22,8 @@ class THELASTSIDEQUEST_API ASideQuestCharacter : public ACharacter
 
 public:
     ASideQuestCharacter();
+    virtual float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
+        AController* EventInstigator, AActor* DamageCauser) override;
 
     UHealthComponent* GetHealthComponent() const { return HealthComponent; }
     bool IsDead() const;
@@ -33,6 +35,8 @@ public:
     FText GetDialogueText() const;
     void BeginDialogue(const TArray<FSideQuestDialogueLine>& Lines, AQuestInteractableActor* Source,
         ESideQuestStep ExpectedStep, ESideQuestStep ResultStep, bool bShouldAdvance);
+    void BeginEndingDialogue(const TArray<FSideQuestDialogueLine>& Lines);
+    bool IsGameplayLocked() const;
 
     UFUNCTION(BlueprintImplementableEvent, Category = "Combat|Presentation")
     void PlayHitPresentation();
@@ -55,6 +59,7 @@ private:
     void StartJump();
     void Attack();
     void RestartAfterDeath();
+    void QuitFromCredits();
     void Interact();
     void RefreshNearbyInteractable();
     void FinishDialogue();
@@ -125,6 +130,9 @@ private:
     ESideQuestStep DialogueExpectedStep = ESideQuestStep::TalkToMildred;
     ESideQuestStep DialogueResultStep = ESideQuestStep::TalkToGuard;
     bool bDialogueAdvancesQuest = false;
+    bool bDialogueEndsGame = false;
+    float NextDialogueAdvanceTime = 0.0f;
     FTimerHandle InteractionScanTimer;
     UPROPERTY(EditDefaultsOnly, Category = "Input") TObjectPtr<UInputAction> InteractAction;
+    UPROPERTY(EditDefaultsOnly, Category = "Input") TObjectPtr<UInputAction> QuitAction;
 };

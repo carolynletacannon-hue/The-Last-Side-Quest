@@ -148,8 +148,14 @@ void APhase4World::BeginPlay()
         }
         return Actor;
     };
-    SpawnInteractable(MildredClass, {300,180,40}, FText::FromString(TEXT("Talk to Mildred")), ESideQuestStep::TalkToMildred, ESideQuestStep::TalkToGuard, true,
+    AQuestInteractableActor* Mildred = SpawnInteractable(MildredClass, {300,180,40}, FText::FromString(TEXT("Talk to Mildred")), ESideQuestStep::TalkToMildred, ESideQuestStep::TalkToGuard, true,
         {Line(TEXT("Mildred"), TEXT("My Mittens has gone missing. Would you find him for me, dear?")), Line(TEXT("Player"), TEXT("I just killed the Dark Lord.")), Line(TEXT("Mildred"), TEXT("That's lovely. Mittens likes chicken.")), Line(TEXT("Quest"), TEXT("The Last Side Quest — Reward: 3 Gold"))});
+    Mildred->ConfigureEnding(
+        {Line(TEXT("Mildred"), TEXT("Mittens! There you are!")),
+         Line(TEXT("Player"), TEXT("That creature has killed at least twelve people.")),
+         Line(TEXT("Mildred"), TEXT("Oh, he gets grumpy when he's hungry."))},
+        {Line(TEXT("Mildred"), TEXT("Would you mind finding my other cat?")),
+         Line(TEXT("Player"), TEXT("No."))});
     SpawnInteractable(GuardClass, {2100,-120,40}, FText::FromString(TEXT("Talk to Guard")), ESideQuestStep::TalkToGuard, ESideQuestStep::FollowForestClue, true,
         {Line(TEXT("Guard"), TEXT("Hero! The kingdom owes you everything.")), Line(TEXT("Player"), TEXT("Have you seen a cat?")), Line(TEXT("Guard"), TEXT("…Orange?")), Line(TEXT("Player"), TEXT("Yes.")), Line(TEXT("Guard"), TEXT("Went into the forest."))});
     SpawnInteractable(GoblinSurvivorClass, {8050,230,40}, FText::FromString(TEXT("Talk to goblin")), ESideQuestStep::TalkToGoblin, ESideQuestStep::EnterRuins, true,
