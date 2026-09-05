@@ -11,6 +11,7 @@
 #include "Engine/DirectionalLight.h"
 #include "Engine/PointLight.h"
 #include "Engine/SkyLight.h"
+#include "Engine/SkyAtmosphere.h"
 #include "Engine/StaticMesh.h"
 #include "Interaction/QuestInteractableActor.h"
 #include "Materials/MaterialInterface.h"
@@ -33,8 +34,7 @@ APhase4World::APhase4World()
 {
     PrimaryActorTick.bCanEverTick = false;
     SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("RouteRoot")));
-    GroundMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
-    PropMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+    GroundCollisionMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
 }
 
 void APhase4World::BeginPlay()
@@ -51,23 +51,69 @@ void APhase4World::BeginPlay()
     {
         UStaticMeshComponent* Floor = NewObject<UStaticMeshComponent>(this);
         Floor->RegisterComponent(); Floor->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-        Floor->SetStaticMesh(GroundMesh); Floor->SetWorldLocation(Route[Index]); Floor->SetWorldScale3D({14,7,0.8f});
+        Floor->SetStaticMesh(GroundCollisionMesh); Floor->SetWorldLocation(Route[Index]); Floor->SetWorldScale3D({14,7,0.8f});
         Floor->SetCollisionProfileName(TEXT("BlockAll"));
-        UMaterialInterface* AreaMaterial = Index < 3 ? VillageMaterial : (Index < 7 ? ForestMaterial : RuinsMaterial);
+        UMaterialInterface* AreaMaterial = Index < 3 ? VillageGroundMaterial : (Index < 7 ? ForestGroundMaterial : RuinsGroundMaterial);
         if (AreaMaterial) Floor->SetMaterial(0, AreaMaterial);
     }
 
-    // Composition rails double as replacement hooks: village posts, forest trunks, ruin columns.
-    for (int32 Index = 0; Index < Route.Num(); ++Index)
+    auto SpawnArt = [&](const TCHAR* Prefix, const TArray<TObjectPtr<UStaticMesh>>& Meshes, const TArray<FTransform>& Transforms)
     {
-        for (const float Side : {-1.0f, 1.0f})
+        if (Meshes.IsEmpty()) return;
+        for (int32 Index = 0; Index < Transforms.Num(); ++Index)
         {
-            UStaticMeshComponent* Landmark = NewObject<UStaticMeshComponent>(this);
-            Landmark->RegisterComponent(); Landmark->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-            Landmark->SetStaticMesh(PropMesh);
-            Landmark->SetWorldLocation(Route[Index] + FVector(0, Side * (Index < 3 ? 600 : 520), Index < 7 ? 220 : 350));
-            Landmark->SetWorldScale3D(Index < 3 ? FVector(1.4f,1.4f,4) : (Index < 7 ? FVector(2,2,7) : FVector(2.2f,2.2f,10)));
-            Landmark->SetCollisionProfileName(TEXT("BlockAll"));
+            UStaticMesh* Mesh = Meshes[Index % Meshes.Num()];
+            if (!Mesh) continue;
+            UStaticMeshComponent* Art = NewObject<UStaticMeshComponent>(this, *FString::Printf(TEXT("%s_%02d"), Prefix, Index));
+            Art->RegisterComponent(); Art->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+            Art->SetStaticMesh(Mesh); Art->SetWorldTransform(Transforms[Index]);
+            Art->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        }
+    };
+
+    // These placements establish composition only. Gameplay collision and actors remain separate below.
+    SpawnArt(TEXT("VillageBuilding"), VillageBuildingMeshes, {
+        FTransform(FRotator(0,25,0), {450,-750,0}), FTransform(FRotator(0,-20,0), {1050,760,0}),
+        FTransform(FRotator(0,18,0), {1850,-760,0}), FTransform(FRotator(0,-30,0), {2700,820,0})});
+    SpawnArt(TEXT("VillageProp"), VillageSmallPropMeshes, {
+        FTransform(FRotator(0,20,0), {220,380,0}), FTransform(FRotator(0,-35,0), {700,420,0}),
+        FTransform(FRotator(0,40,0), {1500,-430,0}), FTransform(FRotator(0,-15,0), {2450,400,0})});
+    TArray<FTransform> TreeTransforms;
+    for (int32 Index = 3; Index < 8; ++Index) for (const float Side : {-1.f, 1.f})
+        TreeTransforms.Emplace(FRotator(0, Index * 37.f + Side * 12.f, 0), Route[Index] + FVector(Index % 2 ? 220.f : -180.f, Side * 650.f, 0), FVector(1.f + (Index % 3) * .12f));
+    SpawnArt(TEXT("ForestTree"), TreeMeshes, TreeTransforms);
+    SpawnArt(TEXT("ForestRock"), ForestRockMeshes, {
+        FTransform(FRotator(0,10,0), {3900,-500,0}, FVector(.8f)), FTransform(FRotator(0,80,0), {5450,520,0}, FVector(1.2f)),
+        FTransform(FRotator(0,145,0), {6750,-540,0}, FVector(.9f)), FTransform(FRotator(0,210,0), {8250,590,0}, FVector(1.15f))});
+    SpawnArt(TEXT("ForestUndergrowth"), ForestUndergrowthMeshes, {
+        FTransform(FRotator(0,0,0), {3600,430,0}), FTransform(FRotator(0,75,0), {4850,-430,0}),
+        FTransform(FRotator(0,155,0), {6100,470,0}), FTransform(FRotator(0,235,0), {7350,-460,0}), FTransform(FRotator(0,310,0), {8500,430,0})});
+    SpawnArt(TEXT("RuinWall"), RuinWallMeshes, {
+        FTransform(FRotator(0,0,0), {9250,-680,0}), FTransform(FRotator(0,180,0), {9250,760,0}),
+        FTransform(FRotator(0,0,0), {10800,-720,0}), FTransform(FRotator(0,180,0), {10800,800,0}),
+        FTransform(FRotator(0,0,0), {12400,-780,0}, FVector(1.2f)), FTransform(FRotator(0,180,0), {12400,780,0}, FVector(1.2f))});
+    SpawnArt(TEXT("RuinArchitecture"), RuinColumnAndArchMeshes, {
+        FTransform(FRotator::ZeroRotator, {9000,90,0}), FTransform(FRotator::ZeroRotator, {11050,180,0}, FVector(1.15f)),
+        FTransform(FRotator::ZeroRotator, {13200,0,0}, FVector(1.45f))});
+    SpawnArt(TEXT("RuinRubble"), RuinRubbleMeshes, {
+        FTransform(FRotator(0,20,0), {9550,520,0}), FTransform(FRotator(0,100,0), {10300,-520,0}),
+        FTransform(FRotator(0,210,0), {11700,530,0}), FTransform(FRotator(0,300,0), {12800,-560,0})});
+
+    // Keep a clean clone legible, but never mix obvious primitives into an assigned production-art pass.
+    if (VillageBuildingMeshes.IsEmpty() && TreeMeshes.IsEmpty() && RuinColumnAndArchMeshes.IsEmpty())
+    {
+        UStaticMesh* FallbackProp = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+        for (int32 Index = 0; Index < Route.Num(); ++Index)
+        {
+            for (const float Side : {-1.f, 1.f})
+            {
+                UStaticMeshComponent* Landmark = NewObject<UStaticMeshComponent>(this);
+                Landmark->RegisterComponent(); Landmark->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+                Landmark->SetStaticMesh(FallbackProp);
+                Landmark->SetWorldLocation(Route[Index] + FVector(0, Side * (Index < 3 ? 600 : 520), Index < 7 ? 220 : 350));
+                Landmark->SetWorldScale3D(Index < 3 ? FVector(1.4f,1.4f,4) : (Index < 7 ? FVector(2,2,7) : FVector(2.2f,2.2f,10)));
+                Landmark->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+            }
         }
     }
 
@@ -80,7 +126,7 @@ void APhase4World::BeginPlay()
         {
             UStaticMeshComponent* Placeholder = NewObject<UStaticMeshComponent>(Actor);
             Placeholder->RegisterComponent(); Placeholder->AttachToComponent(Actor->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-            Placeholder->SetStaticMesh(PropMesh); Placeholder->SetRelativeLocation({0,0,90});
+            Placeholder->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"))); Placeholder->SetRelativeLocation({0,0,90});
             Placeholder->SetRelativeScale3D({.55f,.55f,1.8f}); Placeholder->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         }
         return Actor;
@@ -116,15 +162,19 @@ void APhase4World::BeginPlay()
         World->SpawnActor<APawn>(SkeletonEnemyClass ? SkeletonEnemyClass : ASideQuestEnemy::StaticClass(), Location, FRotator::ZeroRotator);
 
     // Named environmental-story hooks mark the survivor clearing for the final authored assets.
-    const TArray<TPair<FName, FVector>> Clues = {
-        {TEXT("DeadGoblinArtHook"), {7800,-260,20}}, {TEXT("ScratchedTreeArtHook"), {7920,430,180}},
-        {TEXT("DamagedCartArtHook"), {8200,-380,50}}};
-    for (const TPair<FName, FVector>& Clue : Clues)
+    const TArray<TTuple<FName, FVector, TObjectPtr<UStaticMesh>>> Clues = {
+        {TEXT("DeadGoblinArtHook"), {7800,-260,20}, DeadGoblinMesh}, {TEXT("ScratchedTreeArtHook"), {7920,430,0}, ScratchedTreeMesh},
+        {TEXT("DamagedCartArtHook"), {8200,-380,0}, DamagedCartMesh}};
+    for (const TTuple<FName, FVector, TObjectPtr<UStaticMesh>>& Clue : Clues)
     {
-        UStaticMeshComponent* Hook = NewObject<UStaticMeshComponent>(this, Clue.Key);
+        UStaticMesh* Mesh = Clue.Get<2>();
+        const bool bIsFallback = !Mesh;
+        if (bIsFallback) Mesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+        UStaticMeshComponent* Hook = NewObject<UStaticMeshComponent>(this, Clue.Get<0>());
         Hook->RegisterComponent(); Hook->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-        Hook->SetStaticMesh(PropMesh); Hook->SetWorldLocation(Clue.Value); Hook->SetWorldScale3D({1.5f,.5f,.35f});
-        Hook->SetCollisionProfileName(TEXT("BlockAll"));
+        Hook->SetStaticMesh(Mesh); Hook->SetWorldLocation(Clue.Get<1>());
+        if (bIsFallback) Hook->SetWorldScale3D({1.5f,.5f,.35f});
+        Hook->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     }
 
     UBoxComponent* GateBox = NewObject<UBoxComponent>(this, TEXT("RuinsGateCollision"));
@@ -133,7 +183,9 @@ void APhase4World::BeginPlay()
     GateCollision = GateBox;
     UStaticMeshComponent* GateMesh = NewObject<UStaticMeshComponent>(this, TEXT("RuinsGateVisual"));
     GateMesh->RegisterComponent(); GateMesh->AttachToComponent(GateBox, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-    GateMesh->SetStaticMesh(GroundMesh); GateMesh->SetRelativeScale3D({0.7f,6.5f,3}); GateMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); GateVisual = GateMesh;
+    GateMesh->SetStaticMesh(GateVisualMesh ? GateVisualMesh : GroundCollisionMesh);
+    if (!GateVisualMesh) GateMesh->SetRelativeScale3D({0.7f,6.5f,3});
+    GateMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); GateVisual = GateMesh;
 
     const TArray<TPair<FVector, FLinearColor>> Lights = {
         {{900,0,450}, FLinearColor(1,.45f,.16f)}, {{2600,100,450}, FLinearColor(1,.5f,.2f)},
@@ -144,13 +196,14 @@ void APhase4World::BeginPlay()
         Actor->PointLightComponent->SetLightColor(Light.Value); Actor->PointLightComponent->SetIntensity(4500); Actor->PointLightComponent->SetAttenuationRadius(1100);
     }
     ADirectionalLight* Sun = World->SpawnActor<ADirectionalLight>(FVector::ZeroVector, FRotator(-32,-24,0));
-    Sun->GetLightComponent()->SetIntensity(3.2f);
-    Sun->GetLightComponent()->SetLightColor(FLinearColor(1.0f,.72f,.48f));
+    Sun->GetLightComponent()->SetIntensity(SunIntensity);
+    Sun->GetLightComponent()->SetLightColor(SunColor);
     ASkyLight* Sky = World->SpawnActor<ASkyLight>();
-    Sky->GetLightComponent()->SetIntensity(.55f);
+    Sky->GetLightComponent()->SetIntensity(SkyLightIntensity);
     Sky->GetLightComponent()->SetLightColor(FLinearColor(.34f,.48f,.62f));
     AExponentialHeightFog* Fog = World->SpawnActor<AExponentialHeightFog>(FVector(7000,0,0), FRotator::ZeroRotator);
-    Fog->GetComponent()->SetFogDensity(.018f); Fog->GetComponent()->SetVolumetricFog(true);
+    Fog->GetComponent()->SetFogDensity(FogDensity); Fog->GetComponent()->SetVolumetricFog(true);
+    World->SpawnActor<ASkyAtmosphere>();
 
     ANavMeshBoundsVolume* NavBounds = World->SpawnActor<ANavMeshBoundsVolume>(FVector(7300,0,200), FRotator::ZeroRotator);
     NavBounds->SetActorScale3D({150,18,6});

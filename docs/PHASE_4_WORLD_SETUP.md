@@ -38,8 +38,9 @@ This is the unavoidable editor work because licensed binaries are not present in
 
 1. Build and open the project. In **Content Browser**, create `Content/World/Phase4`.
 2. Right-click → **Blueprint Class** → **All Classes** → `Phase4World`; name it `BP_Phase4World`.
-3. Open it → **Class Defaults**. Under **Phase 4 | Art**, assign a modular ground mesh, vertical
-   dressing mesh, and the three cohesive PBR material instances described in `ASSET_PLAN.md`.
+3. Open it → **Class Defaults**. Retain the collision ground under **Route (Do Not Remove)**, assign
+   its three cohesive PBR material instances, then fill the village, forest, ruins, story, and gate
+   art slots described in `ASSET_PLAN.md`. Decorative slots do not own gameplay collision.
 4. Under **Phase 4 | Cast**, assign the five Phase 3 Blueprint children. Under **Enemies**, assign the
    goblin, slime, and skeleton children. Compile and save.
 5. Open the project's gameplay map. If a C++ `Phase4World` was already placed, delete it. Drag
@@ -55,6 +56,9 @@ This is the unavoidable editor work because licensed binaries are not present in
    green, stop PIE, place a **Nav Mesh Bounds Volume** spanning `(0–14000, ±900)`, then build navigation.
 9. Play from Mildred through the chamber threshold. Confirm the gate disappears only after the lever
    completes and that its former opening is walkable.
+
+For the complete beginner-friendly production-art pass, use `PHASE_4_5_VISUAL_PASS.md`. It supersedes
+the broad dressing advice above without changing this route or its gameplay checks.
 
 ## Phase 4 test checklist
 

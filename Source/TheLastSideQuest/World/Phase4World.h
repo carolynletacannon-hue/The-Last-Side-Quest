@@ -23,11 +23,30 @@ public:
 protected:
     virtual void BeginPlay() override;
 
-    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art") TObjectPtr<UStaticMesh> GroundMesh;
-    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art") TObjectPtr<UStaticMesh> PropMesh;
-    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art") TObjectPtr<UMaterialInterface> VillageMaterial;
-    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art") TObjectPtr<UMaterialInterface> ForestMaterial;
-    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art") TObjectPtr<UMaterialInterface> RuinsMaterial;
+    /** Collision-bearing route floor. Keep this assigned even after decorative roads/terrain are added. */
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Route (Do Not Remove)") TObjectPtr<UStaticMesh> GroundCollisionMesh;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Route (Do Not Remove)") TObjectPtr<UMaterialInterface> VillageGroundMaterial;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Route (Do Not Remove)") TObjectPtr<UMaterialInterface> ForestGroundMaterial;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Route (Do Not Remove)") TObjectPtr<UMaterialInterface> RuinsGroundMaterial;
+
+    /** Optional art is non-colliding; cycle two or three compatible variations to avoid obvious repetition. */
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Village") TArray<TObjectPtr<UStaticMesh>> VillageBuildingMeshes;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Village") TArray<TObjectPtr<UStaticMesh>> VillageSmallPropMeshes;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Forest") TArray<TObjectPtr<UStaticMesh>> TreeMeshes;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Forest") TArray<TObjectPtr<UStaticMesh>> ForestRockMeshes;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Forest") TArray<TObjectPtr<UStaticMesh>> ForestUndergrowthMeshes;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Ruins") TArray<TObjectPtr<UStaticMesh>> RuinWallMeshes;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Ruins") TArray<TObjectPtr<UStaticMesh>> RuinColumnAndArchMeshes;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Ruins") TArray<TObjectPtr<UStaticMesh>> RuinRubbleMeshes;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Ruins") TObjectPtr<UStaticMesh> GateVisualMesh;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Story") TObjectPtr<UStaticMesh> DeadGoblinMesh;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Story") TObjectPtr<UStaticMesh> ScratchedTreeMesh;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Story") TObjectPtr<UStaticMesh> DamagedCartMesh;
+
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Lighting", meta=(ClampMin="0.0")) float SunIntensity = 3.2f;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Lighting") FLinearColor SunColor = FLinearColor(1.0f, .72f, .48f);
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Lighting", meta=(ClampMin="0.0")) float SkyLightIntensity = .55f;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 4|Lighting", meta=(ClampMin="0.0", ClampMax="0.1")) float FogDensity = .018f;
 
     UPROPERTY(EditDefaultsOnly, Category="Phase 4|Cast") TSubclassOf<AQuestInteractableActor> MildredClass;
     UPROPERTY(EditDefaultsOnly, Category="Phase 4|Cast") TSubclassOf<AQuestInteractableActor> GuardClass;
