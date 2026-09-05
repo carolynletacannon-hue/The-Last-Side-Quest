@@ -1,74 +1,38 @@
 # The Last Side Quest
 
-A tiny comedic browser-based 3D RPG made in one day.
+A tiny comedic third-person fantasy RPG built in **Unreal Engine 5.8**.
 
-You are a legendary adventurer who has already defeated the Dark Lord and saved the kingdom. Before leaving town, you notice one unfinished quest: Mildred's missing orange cat, Mittens.
+You already killed the Dark Lord. You already saved the kingdom. Unfortunately, Mildred still needs you to find her cat.
 
-What should be a five-minute errand escalates from a peaceful village to a forest, ancient ruins, and a final confrontation with **Mittens, Devourer of Worlds**.
+## Visual target
 
-## Goal
+This project prioritizes a polished indie-fantasy presentation over browser portability. Target features include:
 
-Ship a complete 10–15 minute playable RPG with a beginning, middle, boss fight, ending, and credits.
+- Unreal Engine 5.8
+- Third-person C++ gameplay foundation
+- Lumen global illumination and reflections
+- Nanite-ready environment assets
+- Virtual Shadow Maps
+- Volumetric fog and atmospheric lighting
+- High-quality PBR materials
+- Cinematic post-processing
+- Stylized-realistic medieval fantasy art direction
+- Strong contrast between the cozy village and absurdly dramatic Mittens boss arena
 
-## Core loop
+## Scope
 
-Village → Forest → Ruins → Boss Room → Return to Village → Credits
+The game should take roughly 10–15 minutes:
 
-## Tech stack
+Village → Forest → Ruins → Mittens boss → Return to Mildred → Credits
 
-- React 19
-- TypeScript
-- Vite
-- Three.js
-- React Three Fiber
-- @react-three/drei
-- Zustand
-
-This intentionally mirrors the technical approach used by Stonebound so development can move quickly.
-
-## Strict scope
-
-Included:
-- Third-person movement and camera
-- One basic melee attack
-- Player health
-- Simple enemy AI and health
-- Interaction prompts
-- Linear dialogue
-- One quest objective at a time
-- One village, one forest, one ruin, one boss room
-- 2–3 regular enemy types
-- Mittens boss fight
-- Ending and credits
-
-Not included:
-- Inventory grid
-- Crafting
-- Skill trees
-- Leveling
-- Equipment system
-- Procedural generation
-- Open world systems
-- Branching dialogue
-- Multiplayer
-- Save system unless trivial
-- Anything else that threatens finishing the game
-
-## Story beats
-
-1. Mildred asks the player to find Mittens. Reward: 3 gold.
-2. Town guard reports an orange cat entering the forest.
-3. Forest enemies and environmental clues imply Mittens is terrifying.
-4. A surviving goblin calls him "THE BEAST."
-5. The player enters ancient ruins marked with warnings about "The Devourer."
-6. The final chamber reveals a tiny orange house cat on a throne.
-7. Boss title: **MITTENS — DEVOURER OF WORLDS**.
-8. After defeat, Mittens simply meows and allows himself to be picked up.
-9. Mildred rewards the player 3 gold and casually explains that Mittens gets grumpy when hungry.
-10. Mildred asks whether the player can find her other cat. Player: "No." Cut to black.
+The game contains one linear quest, simple melee combat, a handful of enemies and NPCs, and one ridiculous boss fight.
 
 ## Development rule
 
-Every major task should leave the game playable. Prefer ugly-but-working placeholders over unfinished polished systems.
+**Finished beats enormous.** Do not add inventory, crafting, skill trees, leveling, equipment systems, open-world systems, multiplayer, procedural quest generation, or unrelated RPG infrastructure.
 
-See `docs/GAME_DESIGN.md`, `docs/ROADMAP.md`, and `AGENTS.md` before making large changes.
+## Engine
+
+Use Unreal Engine **5.8**. Gameplay systems should prefer C++ and data-driven Unreal patterns so Codex can work effectively from the repository. Blueprints may be used as thin presentation/asset layers where they materially improve iteration, but core game logic should not exist only inside opaque Blueprint graphs.
+
+Read `AGENTS.md`, `docs/GAME_DESIGN.md`, `docs/ART_DIRECTION.md`, and `docs/CODEX_START_HERE.md` before implementing gameplay.
