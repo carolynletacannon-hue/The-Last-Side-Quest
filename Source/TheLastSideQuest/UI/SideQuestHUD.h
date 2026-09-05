@@ -11,5 +11,10 @@ class THELASTSIDEQUEST_API ASideQuestHUD : public AHUD
     GENERATED_BODY()
 
 public:
+    virtual void BeginPlay() override;
     virtual void DrawHUD() override;
+    void UpdateInteractionUI();
+
+private:
+    UPROPERTY() TObjectPtr<class UInteractionDialogueWidget> InteractionWidget;
 };

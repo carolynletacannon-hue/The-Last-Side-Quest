@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Quest/SideQuestTypes.h"
 #include "SideQuestCharacter.generated.h"
 
 class UCameraComponent;
@@ -10,6 +11,7 @@ class UInputAction;
 class UInputMappingContext;
 class UAnimMontage;
 class USpringArmComponent;
+class AQuestInteractableActor;
 struct FInputActionValue;
 
 /** Third-person player foundation for The Last Side Quest. */
@@ -24,6 +26,13 @@ public:
     UHealthComponent* GetHealthComponent() const { return HealthComponent; }
     bool IsDead() const;
     float GetLastDamageTime() const { return LastDamageTime; }
+    bool HasAvailableInteraction() const { return IsValid(CurrentInteractable); }
+    bool IsInDialogue() const { return DialogueIndex != INDEX_NONE; }
+    FText GetCurrentInteractionLabel() const;
+    FText GetDialogueSpeaker() const;
+    FText GetDialogueText() const;
+    void BeginDialogue(const TArray<FSideQuestDialogueLine>& Lines, AQuestInteractableActor* Source,
+        ESideQuestStep ExpectedStep, ESideQuestStep ResultStep, bool bShouldAdvance);
 
     UFUNCTION(BlueprintImplementableEvent, Category = "Combat|Presentation")
     void PlayHitPresentation();
@@ -45,6 +54,9 @@ private:
     void LookPitch(const FInputActionValue& Value);
     void Attack();
     void RestartAfterDeath();
+    void Interact();
+    void RefreshNearbyInteractable();
+    void FinishDialogue();
 
     UFUNCTION()
     void HandleHealthChanged(UHealthComponent* Component, float NewHealth, float HealthDelta, AActor* DamageCauser);
@@ -103,4 +115,15 @@ private:
 
     UPROPERTY(EditDefaultsOnly, Category = "Input")
     TObjectPtr<UInputAction> RestartAction;
+
+    UPROPERTY(EditAnywhere, Category = "Interaction", meta=(ClampMin="50.0")) float InteractionRadius = 225.0f;
+    UPROPERTY() TObjectPtr<AActor> CurrentInteractable;
+    UPROPERTY() TObjectPtr<AQuestInteractableActor> DialogueSource;
+    UPROPERTY() TArray<FSideQuestDialogueLine> ActiveDialogue;
+    int32 DialogueIndex = INDEX_NONE;
+    ESideQuestStep DialogueExpectedStep = ESideQuestStep::TalkToMildred;
+    ESideQuestStep DialogueResultStep = ESideQuestStep::TalkToGuard;
+    bool bDialogueAdvancesQuest = false;
+    FTimerHandle InteractionScanTimer;
+    UPROPERTY(EditDefaultsOnly, Category = "Input") TObjectPtr<UInputAction> InteractAction;
 };
