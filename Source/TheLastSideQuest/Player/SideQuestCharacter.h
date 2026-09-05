@@ -52,6 +52,7 @@ private:
     void MoveRight(const FInputActionValue& Value);
     void LookYaw(const FInputActionValue& Value);
     void LookPitch(const FInputActionValue& Value);
+    void StartJump();
     void Attack();
     void RestartAfterDeath();
     void Interact();

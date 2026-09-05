@@ -53,8 +53,10 @@ Phase 3 intentionally leaves it available so the complete quest flow can be test
 ## Complete test flow
 
 Walk to each actor and verify the gold `[E]` prompt only appears at the actor valid for the current
-objective. Press E once to open dialogue and once per line to continue. Follow the three trigger
+objective. Press E once to open dialogue and once per line to continue. While dialogue is visible,
+verify movement, jumping, and melee are blocked but camera orbit still works; after the final line,
+verify those controls and normal interaction prompts return immediately. Follow the three trigger
 volumes at their positions, read the inscription, pull the lever, cross the chamber threshold, pick up
 the placeholder Mittens, and return to the second Mildred actor. Confirm the objective ends at
 `Quest complete — Reward: 3 Gold`. Also verify movement/camera, melee, health/death, and R restart
-still behave as before.
+still behave as before, including death during dialogue and R restart after death.
