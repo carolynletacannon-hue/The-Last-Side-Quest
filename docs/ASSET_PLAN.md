@@ -65,13 +65,18 @@ playable; those gray shapes are **not final art** and must not be used for relea
 
 Create `BP_Phase4World` and assign one cohesive set of licensed assets to its exposed categories:
 
-- **Art:** a modular walkable ground/road piece for `Ground Mesh`, a compatible tree/column/vertical
-  dressing piece for `Prop Mesh`, and warm village, cool forest, and damp/mossy ruins materials.
+- **Route:** retain `Ground Collision Mesh`; assign warm village, cool forest, and damp/mossy ruins
+  material instances. The generated floor owns dependable collision independently of decoration.
+- **Village:** building and small-prop arrays.
+- **Forest:** tree, rock, and undergrowth arrays.
+- **Ruins:** wall, column/arch, rubble, and gate visual slots.
+- **Story:** dead goblin, scratched tree, and damaged cart slots.
 - **Cast:** Phase 3 presentation children for Mildred, guard, survivor, inscription, and lever.
 - **Enemies:** the Phase 2 goblin, slime, and skeleton presentation children. The authored counts are
   three goblins + two slimes in the forest and three skeletons in the ruins.
 
-Recommended free acquisition shortlist (verify the current Fab license before adding it):
+Free acquisition categories to search (verify the current product page, compatibility, and license
+before adding it; no specific current Fab listing was verifiable during Phase 4.5):
 
 1. Quixel Megascans medieval/European surfaces, forest rocks, trees, moss, and ruined masonry.
 2. Epic-authored free environment collections on Fab for compatible village modular pieces.
@@ -80,6 +85,10 @@ Recommended free acquisition shortlist (verify the current Fab license before ad
 Nothing from Fab or Megascans is committed by Phase 4. After selecting exact products, add their
 names, store URLs, license terms, installed project paths, and uses to this file before committing
 their references.
+
+The beginner workflow, placement coordinates, lighting ranges, performance guidance, and visual
+acceptance checklist are in `PHASE_4_5_VISUAL_PASS.md`. The expected hands-on editor pass is roughly
+12–20 hours after asset download, plus 4–8 hours if screenshot-level polish is required.
 
 ## Source policy
 
