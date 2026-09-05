@@ -1,9 +1,34 @@
-node_modules/
-dist/
-.vite/
-*.log
-*.tsbuildinfo
-.env
-.env.*
-!.env.example
+# Unreal Engine generated files
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+.vs/
+.vscode/
+.idea/
+*.VC.db
+*.opensdf
+*.sdf
+*.sln
+*.suo
+*.xcodeproj
+*.xcworkspace
+
+# Build/package output
+Build/
+StagedBuilds/
+
+# User-specific Unreal files
+*.opensdf
+*.sdf
+*.suo
+*.user
+
+# OS/editor
 .DS_Store
+Thumbs.db
+
+# Keep source-controlled Unreal project/content/config
+!Config/
+!Content/
+!Source/
