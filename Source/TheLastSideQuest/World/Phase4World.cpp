@@ -1,6 +1,7 @@
 #include "World/Phase4World.h"
 
 #include "Components/BoxComponent.h"
+#include "Boss/MittensBoss.h"
 #include "Components/ExponentialHeightFogComponent.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/PointLightComponent.h"
@@ -46,12 +47,14 @@ void APhase4World::BeginPlay()
     // A narrow, gently turning 2.5-minute outbound walk: village, forest, then monumental ruins.
     const TArray<FVector> Route = {
         {0,0,-80}, {1400,0,-80}, {2800,120,-80}, {4200,260,-80}, {5600,-100,-80},
-        {7000,-240,-80}, {8400,0,-80}, {9800,180,-80}, {11200,180,-80}, {12600,0,-80}, {14000,0,-80}};
+        {7000,-240,-80}, {8400,0,-80}, {9800,180,-80}, {11200,180,-80}, {12600,0,-80},
+        {14000,0,-80}, {15100,0,-80}, {16200,0,-80}};
     for (int32 Index = 0; Index < Route.Num(); ++Index)
     {
         UStaticMeshComponent* Floor = NewObject<UStaticMeshComponent>(this);
         Floor->RegisterComponent(); Floor->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-        Floor->SetStaticMesh(GroundCollisionMesh); Floor->SetWorldLocation(Route[Index]); Floor->SetWorldScale3D({14,7,0.8f});
+        Floor->SetStaticMesh(GroundCollisionMesh); Floor->SetWorldLocation(Route[Index]);
+        Floor->SetWorldScale3D(Index >= 11 ? FVector(14,14,.8f) : FVector(14,7,.8f));
         Floor->SetCollisionProfileName(TEXT("BlockAll"));
         UMaterialInterface* AreaMaterial = Index < 3 ? VillageGroundMaterial : (Index < 7 ? ForestGroundMaterial : RuinsGroundMaterial);
         if (AreaMaterial) Floor->SetMaterial(0, AreaMaterial);
@@ -98,6 +101,20 @@ void APhase4World::BeginPlay()
     SpawnArt(TEXT("RuinRubble"), RuinRubbleMeshes, {
         FTransform(FRotator(0,20,0), {9550,520,0}), FTransform(FRotator(0,100,0), {10300,-520,0}),
         FTransform(FRotator(0,210,0), {11700,530,0}), FTransform(FRotator(0,300,0), {12800,-560,0})});
+    SpawnArt(TEXT("BossFloorArt"), BossFloorMeshes, {FTransform(FRotator::ZeroRotator, {15100,0,5}, FVector(2.2f,2.2f,1))});
+    SpawnArt(TEXT("BossColumn"), MonumentalColumnMeshes, {
+        FTransform(FRotator::ZeroRotator,{14250,-900,0},FVector(1.5f)), FTransform(FRotator::ZeroRotator,{14250,900,0},FVector(1.5f)),
+        FTransform(FRotator::ZeroRotator,{15100,-1050,0},FVector(1.8f)), FTransform(FRotator::ZeroRotator,{15100,1050,0},FVector(1.8f)),
+        FTransform(FRotator::ZeroRotator,{16000,-900,0},FVector(2.f)), FTransform(FRotator::ZeroRotator,{16000,900,0},FVector(2.f))});
+    SpawnArt(TEXT("BossArch"), BossArchMeshes, {
+        FTransform(FRotator::ZeroRotator,{14000,0,0},FVector(1.8f)), FTransform(FRotator::ZeroRotator,{16150,0,0},FVector(2.2f))});
+    SpawnArt(TEXT("BossBrazier"), BossBrazierMeshes, {
+        FTransform(FRotator::ZeroRotator,{14500,-750,0}), FTransform(FRotator::ZeroRotator,{14500,750,0}),
+        FTransform(FRotator::ZeroRotator,{15800,-700,0}), FTransform(FRotator::ZeroRotator,{15800,700,0})});
+    SpawnArt(TEXT("BossRubble"), BossRubbleMeshes, {
+        FTransform(FRotator(0,30,0),{14700,-1000,0}), FTransform(FRotator(0,150,0),{15300,1000,0})});
+    if (ThroneMesh)
+        SpawnArt(TEXT("BossThrone"), TArray<TObjectPtr<UStaticMesh>>{ThroneMesh}, {FTransform(FRotator(0,-90,0),{16100,0,40})});
 
     // Keep a clean clone legible, but never mix obvious primitives into an assigned production-art pass.
     if (VillageBuildingMeshes.IsEmpty() && TreeMeshes.IsEmpty() && RuinColumnAndArchMeshes.IsEmpty())
@@ -149,7 +166,19 @@ void APhase4World::BeginPlay()
     };
     SpawnTrigger({3400,150,80}, ESideQuestStep::FollowForestClue, ESideQuestStep::TalkToGoblin);
     SpawnTrigger({9000,90,80}, ESideQuestStep::EnterRuins, ESideQuestStep::OpenRuinsGate);
-    SpawnTrigger({13400,0,80}, ESideQuestStep::ReachMittens, ESideQuestStep::PickUpMittens);
+    // Phase 5 owns chamber progression. Entering starts the boss; only defeat unlocks pickup.
+    World->SpawnActor<AMittensBoss>(MittensBossClass ? MittensBossClass : AMittensBoss::StaticClass(),
+        FVector(15900,0,40), FRotator(0,180,0));
+
+    // Reliable invisible chamber boundaries remain separate from all replaceable cathedral art.
+    for (const FVector& WallLocation : TArray<FVector>{{15100,-1400,220},{15100,1400,220},{16300,0,220}})
+    {
+        UBoxComponent* Wall = NewObject<UBoxComponent>(this);
+        Wall->RegisterComponent(); Wall->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+        Wall->SetWorldLocation(WallLocation);
+        Wall->SetBoxExtent(FMath::Abs(WallLocation.Y) > 0 ? FVector(1200,60,300) : FVector(60,1400,300));
+        Wall->SetCollisionProfileName(TEXT("BlockAll"));
+    }
 
     // Five restrained forest encounters, then three skeletons after the ruins threshold.
     const TArray<FVector> ForestEnemies = {{4500,120,40},{5200,-220,40},{6250,180,40},{7000,-180,40},{7600,160,40}};
@@ -189,7 +218,9 @@ void APhase4World::BeginPlay()
 
     const TArray<TPair<FVector, FLinearColor>> Lights = {
         {{900,0,450}, FLinearColor(1,.45f,.16f)}, {{2600,100,450}, FLinearColor(1,.5f,.2f)},
-        {{9800,0,350}, FLinearColor(1,.22f,.05f)}, {{11600,0,350}, FLinearColor(1,.18f,.04f)}};
+        {{9800,0,350}, FLinearColor(1,.22f,.05f)}, {{11600,0,350}, FLinearColor(1,.18f,.04f)},
+        {{14500,-700,380}, FLinearColor(1,.12f,.025f)}, {{14500,700,380}, FLinearColor(1,.12f,.025f)},
+        {{15800,-650,420}, FLinearColor(1,.08f,.02f)}, {{15800,650,420}, FLinearColor(1,.08f,.02f)}};
     for (const TPair<FVector, FLinearColor>& Light : Lights)
     {
         APointLight* Actor = World->SpawnActor<APointLight>(Light.Key, FRotator::ZeroRotator);
@@ -205,8 +236,8 @@ void APhase4World::BeginPlay()
     Fog->GetComponent()->SetFogDensity(FogDensity); Fog->GetComponent()->SetVolumetricFog(true);
     World->SpawnActor<ASkyAtmosphere>();
 
-    ANavMeshBoundsVolume* NavBounds = World->SpawnActor<ANavMeshBoundsVolume>(FVector(7300,0,200), FRotator::ZeroRotator);
-    NavBounds->SetActorScale3D({150,18,6});
+    ANavMeshBoundsVolume* NavBounds = World->SpawnActor<ANavMeshBoundsVolume>(FVector(8200,0,200), FRotator::ZeroRotator);
+    NavBounds->SetActorScale3D({168,24,6});
     if (UNavigationSystemV1* Navigation = FNavigationSystem::GetCurrent<UNavigationSystemV1>(World)) Navigation->OnNavigationBoundsUpdated(NavBounds);
 }
 

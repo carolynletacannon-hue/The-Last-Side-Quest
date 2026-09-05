@@ -9,7 +9,7 @@ otherwise empty map and contains:
 - a compact village start, Mildred at the opening composition, and the guard beside the obvious exit;
 - a gently bending forest path, five normal enemies, forest-clue trigger, and terrified survivor;
 - an imposing ruins approach, entrance trigger, inscription, lever, blocking gate, three skeletons,
-  and the future boss-chamber threshold;
+  and the Phase 5 boss-chamber entrance;
 - collision under the full path, runtime-generated navigation bounds, warm village/torch pools,
   height fog, and deliberately simple landmark/route silhouettes;
 - strict quest-step checks on all interactions and triggers, so walking ahead cannot skip the route;
@@ -29,8 +29,8 @@ Its required order is:
 2. **Forest:** clue threshold → five encounters (three goblin slots, two slime slots) → survivor near
    the dead-body/scratched-tree dressing zone → ruins approach.
 3. **Ruins:** entrance threshold → optional/repeatable inscription → lever → gate → three skeleton
-   slots → chamber threshold. The threshold advances to `Pick Up Mittens` for Phase 3 compatibility,
-   but Phase 4 places no cat, boss, pickup, ending, or credits.
+   slots → chamber entrance → the Phase 5 Mittens encounter. Entering advances only to the active
+   fight; defeat, never the entrance, unlocks `Pick Up Mittens`.
 
 ## Required art pass in Unreal Editor
 
@@ -54,8 +54,8 @@ This is the unavoidable editor work because licensed binaries are not present in
    ray tracing.
 8. Select the runtime-generated nav bounds during PIE and press **P**. If any enemy encounter is not
    green, stop PIE, place a **Nav Mesh Bounds Volume** spanning `(0–14000, ±900)`, then build navigation.
-9. Play from Mildred through the chamber threshold. Confirm the gate disappears only after the lever
-   completes and that its former opening is walkable.
+9. Play from Mildred through the chamber entrance. Confirm the ruins gate disappears only after the
+   lever completes and that entering the chamber starts—rather than skips—the Mittens fight.
 
 For the complete beginner-friendly production-art pass, use `PHASE_4_5_VISUAL_PASS.md`. It supersedes
 the broad dressing advice above without changing this route or its gameplay checks.
@@ -68,7 +68,7 @@ the broad dressing advice above without changing this route or its gameplay chec
 4. Confirm the damaged clearing reads visually, then talk to the terrified goblin.
 5. Cross the ruins entrance, read the inscription, and defeat the three skeletons.
 6. Try the closed gate, pull the lever, and confirm collision and visual obstruction are both removed.
-7. Cross the chamber threshold and confirm the objective changes to `Pick up Mittens`, with no boss
-   encounter yet.
+7. Cross the chamber entrance and confirm the objective changes to `Defeat Mittens, Devourer of
+   Worlds`; confirm `Pick up Mittens` appears only after his health reaches zero.
 8. On a separate run, die during combat, press **R**, and confirm the level and quest restart cleanly.
 9. Attempt to run ahead before each quest beat; no out-of-order trigger or interaction should advance.

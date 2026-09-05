@@ -9,6 +9,7 @@ class APawn;
 class UMaterialInterface;
 class UStaticMesh;
 class UPrimitiveComponent;
+class AMittensBoss;
 
 /**
  * Compact source-controlled Phase 4 route. It supplies collision, lighting, gameplay placement and
@@ -39,6 +40,12 @@ protected:
     UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Ruins") TArray<TObjectPtr<UStaticMesh>> RuinColumnAndArchMeshes;
     UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Ruins") TArray<TObjectPtr<UStaticMesh>> RuinRubbleMeshes;
     UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Ruins") TObjectPtr<UStaticMesh> GateVisualMesh;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 5|Boss Chamber Art") TArray<TObjectPtr<UStaticMesh>> BossFloorMeshes;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 5|Boss Chamber Art") TArray<TObjectPtr<UStaticMesh>> MonumentalColumnMeshes;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 5|Boss Chamber Art") TArray<TObjectPtr<UStaticMesh>> BossArchMeshes;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 5|Boss Chamber Art") TArray<TObjectPtr<UStaticMesh>> BossBrazierMeshes;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 5|Boss Chamber Art") TArray<TObjectPtr<UStaticMesh>> BossRubbleMeshes;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 5|Boss Chamber Art") TObjectPtr<UStaticMesh> ThroneMesh;
     UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Story") TObjectPtr<UStaticMesh> DeadGoblinMesh;
     UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Story") TObjectPtr<UStaticMesh> ScratchedTreeMesh;
     UPROPERTY(EditDefaultsOnly, Category="Phase 4|Art|Story") TObjectPtr<UStaticMesh> DamagedCartMesh;
@@ -56,6 +63,7 @@ protected:
     UPROPERTY(EditDefaultsOnly, Category="Phase 4|Enemies") TSubclassOf<APawn> GoblinEnemyClass;
     UPROPERTY(EditDefaultsOnly, Category="Phase 4|Enemies") TSubclassOf<APawn> SlimeEnemyClass;
     UPROPERTY(EditDefaultsOnly, Category="Phase 4|Enemies") TSubclassOf<APawn> SkeletonEnemyClass;
+    UPROPERTY(EditDefaultsOnly, Category="Phase 5|Boss") TSubclassOf<AMittensBoss> MittensBossClass;
 
 private:
     UFUNCTION() void OpenRuinsGate();

@@ -1,8 +1,10 @@
 #include "UI/SideQuestHUD.h"
 
 #include "Combat/HealthComponent.h"
+#include "Boss/MittensBoss.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
+#include "EngineUtils.h"
 #include "Player/SideQuestCharacter.h"
 #include "Quest/SideQuestGameState.h"
 #include "UI/InteractionDialogueWidget.h"
@@ -52,6 +54,23 @@ void ASideQuestHUD::DrawHUD()
     if (DamageAge < 0.25f)
     {
         DrawRect(FLinearColor(0.65f, 0.0f, 0.0f, 0.2f * (1.0f - DamageAge / 0.25f)), 0.0f, 0.0f, Canvas->ClipX, Canvas->ClipY);
+    }
+
+    for (TActorIterator<AMittensBoss> It(GetWorld()); It; ++It)
+    {
+        if (!It->IsEncounterActive()) continue;
+        const UHealthComponent* BossHealth = It->GetHealthComponent();
+        const float BossWidth = FMath::Min(Canvas->ClipX * .62f, 760.0f);
+        const float BossX = (Canvas->ClipX - BossWidth) * .5f;
+        const float BossY = Canvas->ClipY - 118.0f;
+        const FString BossTitle = TEXT("MITTENS — DEVOURER OF WORLDS");
+        float TitleWidth = 0.0f, TitleHeight = 0.0f;
+        GetTextSize(BossTitle, TitleWidth, TitleHeight, GEngine->GetMediumFont(), 1.2f);
+        DrawText(BossTitle, FLinearColor(1.0f, .78f, .3f), (Canvas->ClipX - TitleWidth) * .5f,
+            BossY - 32.0f, GEngine->GetMediumFont(), 1.2f, false);
+        DrawRect(FLinearColor(.01f, .005f, .015f, .95f), BossX - 4, BossY - 4, BossWidth + 8, 28);
+        DrawRect(FLinearColor(.48f, .03f, .65f), BossX, BossY, BossWidth * BossHealth->GetHealthFraction(), 20);
+        break;
     }
 
     if (Player->IsDead())

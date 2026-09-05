@@ -113,7 +113,7 @@ To catch repetition, stop at three locations, turn backward, and look for matchi
 6. Keep skeleton spawn zones near X 9400, 10100, and 11900 free of rubble, steep steps, and non-walkable gaps. Use rubble around the perimeter to imply collapse.
 7. Layer moss on top-facing/outer surfaces, damp grime low on walls, and sparse vegetation in joints. Add rubble where a visibly broken wall could plausibly have fallen. Random decals are not a substitute for cause and effect.
 8. Contrast warm torches at turns, inscription, lever, and gate with cool ambient fill. Avoid placing a torch every identical distance.
-9. The chamber threshold at X 13400 is a **future boss entrance only**. Create a tall portal, a darker interior void, restrained backlight/fog, and an unobstructed central axis. Do not add Mittens, boss logic, throne gameplay, or a fake encounter.
+9. The portal at X 14000 is the Phase 5 boss entrance. Preserve the boss-owned trigger and invisible gate/blockers. Dress the chamber beyond it symmetrically, keep the central arena clear, and follow `PHASE_5_MITTENS_BOSS.md` for throne, cat, and encounter setup.
 
 # F. Lighting
 
@@ -165,7 +165,7 @@ Do not enable hardware ray tracing. Keep Lumen GI/reflections, software distance
 - [ ] Ruins use plausible modular construction, rubble, moss, dampness, and increasing architectural scale.
 - [ ] Inscription and lever are visible/reachable; closed gate blocks and open gate is fully walkable.
 - [ ] Warm ruin lights have visible sources and contrast with cool ambience.
-- [ ] Future boss entrance is the route's strongest silhouette and feels important, while containing no boss content yet.
+- [ ] Boss entrance is the route's strongest silhouette; crossing it starts Mittens exactly once and does not unlock pickup.
 
 ## Required play checks
 
