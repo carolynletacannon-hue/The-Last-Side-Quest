@@ -187,13 +187,13 @@ void APhase4World::BeginPlay()
     }
 
     // Five restrained forest encounters, then three skeletons after the ruins threshold.
-    const TArray<FVector> ForestEnemies = {{4500,120,40},{5200,-220,40},{6250,180,40},{7000,-180,40},{7600,160,40}};
+    const TArray<FVector> ForestEnemies = {{4500,120,80},{5200,-220,80},{6250,180,80},{7000,-180,80},{7600,80,80}};
     for (int32 Index = 0; Index < ForestEnemies.Num(); ++Index)
     {
         TSubclassOf<APawn> Class = Index % 2 == 0 ? GoblinEnemyClass : SlimeEnemyClass;
         World->SpawnActor<APawn>(Class ? Class : ASideQuestEnemy::StaticClass(), ForestEnemies[Index], FRotator::ZeroRotator);
     }
-    for (const FVector& Location : TArray<FVector>{{9400,120,40},{10100,160,40},{11900,-120,40}})
+    for (const FVector& Location : TArray<FVector>{{9400,120,80},{10100,160,80},{11900,-120,80}})
         World->SpawnActor<APawn>(SkeletonEnemyClass ? SkeletonEnemyClass : ASideQuestEnemy::StaticClass(), Location, FRotator::ZeroRotator);
 
     // Named environmental-story hooks mark the survivor clearing for the final authored assets.
