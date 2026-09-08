@@ -4,7 +4,7 @@
 
 The game should look like a polished small indie fantasy RPG, not a browser prototype and not a generic Unreal tech demo.
 
-The joke works because the presentation treats the missing-cat quest with absurd sincerity. The world should be attractive enough that the final reveal of a normal orange house cat under a colossal boss title lands harder.
+The joke works because the presentation treats the missing-cat quest with absurd sincerity. The world should be attractive enough that the final reveal of a pristine, extremely fluffy white house cat wearing a pink jeweled collar under a colossal boss title lands harder.
 
 ## Style
 
@@ -42,7 +42,7 @@ Avoid:
 ### Boss chamber — maximum theatrical nonsense
 - cathedral-scale composition
 - throne centered as a strong silhouette
-- dramatic backlight/rim light around a tiny orange cat
+- dramatic backlight/rim light around a tiny, extremely fluffy white cat with a pink jeweled collar
 - fire, embers, fog and controlled cinematic contrast
 - the room should visually scream FINAL BOSS before the title appears
 
@@ -63,7 +63,7 @@ Desktop high-quality target:
 
 Prefer a high-quality third-person humanoid character rig with clean locomotion, attack, hit and death animations. NPCs can reuse compatible rigs/animation sets. Avoid a visual mismatch where the environment is detailed but characters look like primitive mannequins in the final presentation.
 
-Mittens should look like an ordinary believable orange domestic cat. The humor depends on the visual mismatch between his normal appearance and his apocalyptic presentation.
+Mittens should look like a pristine, extremely fluffy white domestic cat wearing a pink jeweled collar. The humor depends on the visual mismatch between his normal appearance and his apocalyptic presentation.
 
 ## Performance rule
 

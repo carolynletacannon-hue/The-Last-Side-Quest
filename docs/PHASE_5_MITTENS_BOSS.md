@@ -40,7 +40,7 @@ These are forgiving source defaults, not verified final balance. Tune only after
 ## Create and configure `BP_MittensBoss`
 
 1. Compile C++, then create `/Game/Boss/BP_MittensBoss` as a Blueprint child of **MittensBoss**.
-2. Select inherited **Mesh** and assign a licensed skeletal mesh of an ordinary, small, believable orange domestic house cat. Fit it to the inherited capsule (34 cm radius, 36 cm half-height). Do not use a giant, armored, demonic, glowing, or mutated cat.
+2. Select inherited **Mesh** and assign a licensed skeletal mesh of a small, pristine, extremely fluffy white domestic house cat wearing a pink jeweled collar. Fit it to the inherited capsule (34 cm radius, 36 cm half-height). Do not use a giant, armored, demonic, glowing, or mutated cat.
    Hide inherited **Placeholder Cat Body** after the real mesh is visible; the stretched Engine sphere is only an obvious source-build proxy.
 3. Assign its Animation Blueprint. Useful clips are **idle**, **walk/run**, **pounce/jump**, **scratch**, **hit reaction**, and **sit/rest**. Root motion is not required; C++ moves attacks.
 4. In `BP_Phase4World` Class Defaults, set **Phase 5 | Boss → Mittens Boss Class** to this child.

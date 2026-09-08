@@ -27,7 +27,7 @@ editable content below.
 | Blueprint | Label | Required → Result | Advance | Dialogue lines (`Speaker: Text`) |
 |---|---|---|---|---|
 | `BP_Mildred_Start` | Talk to Mildred | Talk To Mildred → Talk To Guard | Yes | Mildred: “My Mittens has gone missing. Would you find him for me, dear?” / Player: “I just killed the Dark Lord.” / Mildred: “That's lovely. Mittens likes chicken.” / Quest: “The Last Side Quest — Reward: 3 Gold” |
-| `BP_Guard` | Talk to Guard | Talk To Guard → Follow Forest Clue | Yes | Guard: “Hero! The kingdom owes you everything.” / Player: “Have you seen a cat?” / Guard: “…Orange?” / Player: “Yes.” / Guard: “Went into the forest.” |
+| `BP_Guard` | Talk to Guard | Talk To Guard → Follow Forest Clue | Yes | Guard: “Hero! The kingdom owes you everything.” / Player: “Have you seen a cat?” / Guard: “…White?” / Player: “Yes.” / Guard: “Went into the forest.” |
 | `BP_Goblin` | Talk to goblin | Talk To Goblin → Enter Ruins | Yes | Goblin: “THE BEAST.” / Player: “…The cat?” / Goblin: “DO NOT SPEAK ITS NAME.” |
 | `BP_Inscription` | Read inscription | Open Ruins Gate → Open Ruins Gate | **No** | Inscription: “HE WHO ENTERS SHALL FACE THE DEVOURER.” / Player: “Mittens?” |
 | `BP_RuinsLever` | Pull lever | Open Ruins Gate → Reach Mittens | Yes | (leave empty) |
