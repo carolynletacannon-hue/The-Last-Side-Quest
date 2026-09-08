@@ -2,7 +2,7 @@
 
 ## Premise
 
-The player is a legendary adventurer who has already defeated the Dark Lord and saved the kingdom. One unfinished side quest remains: Mildred's missing orange cat, Mittens.
+The player is a legendary adventurer who has already defeated the Dark Lord and saved the kingdom. One unfinished side quest remains: Mildred's missing white cat, Mittens.
 
 The joke is escalation. A mundane missing-cat errand becomes increasingly ominous until the player reaches a cathedral-scale boss room and discovers Mittens on the throne beneath the title:
 
@@ -45,7 +45,7 @@ Core beats:
 - entry into boss chamber
 
 ### 4. Mittens boss
-A normal-looking orange domestic cat sits on a throne in a wildly cinematic chamber.
+A pristine, extremely fluffy white domestic cat wearing a pink jeweled collar sits on a throne in a wildly cinematic chamber.
 
 Boss title:
 **MITTENS — DEVOURER OF WORLDS**

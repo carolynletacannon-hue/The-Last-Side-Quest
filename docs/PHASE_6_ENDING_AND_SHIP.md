@@ -26,7 +26,7 @@ places to assign their corresponding presentation.
 There is one ordered source path:
 
 1. `TalkToMildred` — hear the opening request.
-2. `TalkToGuard` — ask where the orange cat went.
+2. `TalkToGuard` — ask where the white cat went.
 3. `FollowForestClue` — cross the forest clue threshold.
 4. `TalkToGoblin` — hear the survivor's warning.
 5. `EnterRuins` — cross the ruins threshold.
@@ -151,7 +151,7 @@ test proves the Windows cook or binary.
 ## G. Final release checklist
 
 - [ ] No visible placeholder cubes, cylinders, spheres, stretched cat proxy, or source fallback art.
-- [ ] Real, licensed player, Mildred, guard, goblin, enemies, and ordinary orange cat assets assigned.
+- [ ] Real, licensed player, Mildred, guard, goblin, enemies, and pristine, extremely fluffy white cat with a pink jeweled collar assigned.
 - [ ] Locomotion, sword, hit, death, boss attack, defeat/rest, pickup, and NPC animations assigned.
 - [ ] Cohesive PBR materials and appropriate Nanite settings assigned; hardware ray tracing remains off.
 - [ ] Village, forest, ruins, and return route fully dressed without hiding gameplay.

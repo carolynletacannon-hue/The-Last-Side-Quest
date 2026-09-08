@@ -157,7 +157,7 @@ void APhase4World::BeginPlay()
         {Line(TEXT("Mildred"), TEXT("Would you mind finding my other cat?")),
          Line(TEXT("Player"), TEXT("No."))});
     SpawnInteractable(GuardClass, {2100,-120,40}, FText::FromString(TEXT("Talk to Guard")), ESideQuestStep::TalkToGuard, ESideQuestStep::FollowForestClue, true,
-        {Line(TEXT("Guard"), TEXT("Hero! The kingdom owes you everything.")), Line(TEXT("Player"), TEXT("Have you seen a cat?")), Line(TEXT("Guard"), TEXT("…Orange?")), Line(TEXT("Player"), TEXT("Yes.")), Line(TEXT("Guard"), TEXT("Went into the forest."))});
+        {Line(TEXT("Guard"), TEXT("Hero! The kingdom owes you everything.")), Line(TEXT("Player"), TEXT("Have you seen a cat?")), Line(TEXT("Guard"), TEXT("…White?")), Line(TEXT("Player"), TEXT("Yes.")), Line(TEXT("Guard"), TEXT("Went into the forest."))});
     SpawnInteractable(GoblinSurvivorClass, {8050,230,40}, FText::FromString(TEXT("Talk to goblin")), ESideQuestStep::TalkToGoblin, ESideQuestStep::EnterRuins, true,
         {Line(TEXT("Goblin"), TEXT("THE BEAST.")), Line(TEXT("Player"), TEXT("…The cat?")), Line(TEXT("Goblin"), TEXT("DO NOT SPEAK ITS NAME."))});
     SpawnInteractable(InscriptionClass, {9700,-210,80}, FText::FromString(TEXT("Read inscription")), ESideQuestStep::OpenRuinsGate, ESideQuestStep::OpenRuinsGate, false,

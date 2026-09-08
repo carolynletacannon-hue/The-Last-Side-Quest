@@ -32,7 +32,7 @@ Do not build final art from primitives. Use placeholders only until the matching
    - Phase 2 exposes all three as presentation/stat variants of `ASideQuestEnemy`; implement its attack, hit, and death presentation events in thin Blueprint children
 
 6. **Mittens**
-   - believable orange domestic cat model
+   - pristine, extremely fluffy white domestic cat model with a pink jeweled collar
    - idle, walk/run, jump/pounce and attack-capable animations if possible
    - Phase 5 uses `AMittensBoss` / `BP_MittensBoss`; add hit reaction and sit/rest animations, and
      keep damage, quest progression, and attack timing in C++
@@ -96,9 +96,10 @@ acceptance checklist are in `PHASE_4_5_VISUAL_PASS.md`. The expected hands-on ed
 
 `APhase4World` exposes non-colliding boss floor, monumental column, arch, brazier, rubble, and throne
 slots plus a `MittensBossClass`. Invisible generated floor and boundary boxes remain authoritative.
-Use an ordinary, realistically proportioned orange domestic cat—not armor, mutation, glow, or a
-monster silhouette. No cat, animation, sound, music, Niagara, or licensed chamber asset is committed
-in Phase 5; record the exact source and license here before adding one.
+Use a pristine, extremely fluffy, realistically proportioned white domestic cat with a pink jeweled
+collar—not armor, mutation, glow, or a monster silhouette. No cat, animation, sound, music, Niagara,
+or licensed chamber asset is committed in Phase 5; record the exact source and license here before
+adding one.
 
 ## Source policy
 

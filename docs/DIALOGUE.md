@@ -15,7 +15,7 @@ Guard: “Hero! The kingdom owes you everything.”
 
 Player: “Have you seen a cat?”
 
-Guard: “…Orange?”
+Guard: “…White?”
 
 Player: “Yes.”
 
