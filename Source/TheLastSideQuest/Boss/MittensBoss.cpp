@@ -193,8 +193,20 @@ void AMittensBoss::HandleDefeat(UHealthComponent*, AActor*)
         State->TryAdvanceQuest(ESideQuestStep::FightMittens, ESideQuestStep::PickUpMittens);
     if (ASideQuestCharacter* Player = Cast<ASideQuestCharacter>(CombatTarget))
     {
-        FSideQuestDialogueLine Meow; Meow.Speaker = FText::FromString(TEXT("Mittens")); Meow.Text = FText::FromString(TEXT("Meow."));
-        Player->BeginDialogue({Meow}, nullptr, ESideQuestStep::PickUpMittens, ESideQuestStep::PickUpMittens, false);
+        auto Line = [](const TCHAR* Speaker, const TCHAR* Text)
+        {
+            FSideQuestDialogueLine Result;
+            Result.Speaker = FText::FromString(FString(Speaker));
+            Result.Text = FText::FromString(FString(Text));
+            return Result;
+        };
+        Player->BeginDialogue({
+            Line(TEXT("Mittens"), TEXT("Meow.")),
+            Line(TEXT("Player"), TEXT("That's it?")),
+            Line(TEXT("Player"), TEXT("You tried to kill me. Do not purr at me.")),
+            Line(TEXT("Mittens"), TEXT("Mrrrp.")),
+            Line(TEXT("Player"), TEXT("I know what you're doing. You're lucky you're fluffy."))},
+            nullptr, ESideQuestStep::PickUpMittens, ESideQuestStep::PickUpMittens, false);
     }
 }
 
@@ -213,5 +225,13 @@ void AMittensBoss::Interact_Implementation(APawn* Interactor)
     if (State && State->TryAdvanceQuest(ESideQuestStep::PickUpMittens, ESideQuestStep::ReturnToMildred))
     {
         PlayPickupPresentation(Interactor); SetActorHiddenInGame(true); SetActorEnableCollision(false); SetActorTickEnabled(false);
+        if (ASideQuestCharacter* Player = Cast<ASideQuestCharacter>(Interactor))
+        {
+            FSideQuestDialogueLine PlayerLine;
+            PlayerLine.Speaker = FText::FromString(TEXT("Player"));
+            PlayerLine.Text = FText::FromString(TEXT("Ow. Back legs. Right. Oh, NOW you're happy."));
+            Player->BeginDialogue({PlayerLine}, nullptr,
+                ESideQuestStep::ReturnToMildred, ESideQuestStep::ReturnToMildred, false);
+        }
     }
 }
