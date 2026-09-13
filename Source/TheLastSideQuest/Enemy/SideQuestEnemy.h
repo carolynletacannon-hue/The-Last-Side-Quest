@@ -21,6 +21,7 @@ public:
     float GetAttackCooldown() const { return AttackCooldown; }
     float GetTargetMemoryDuration() const { return TargetMemoryDuration; }
     UHealthComponent* GetHealthComponent() const { return HealthComponent; }
+    void SetGameplayBarksEnabled(bool bEnabled) { bGameplayBarksEnabled = bEnabled; }
 
     UFUNCTION(BlueprintImplementableEvent, Category = "Combat|Presentation")
     void PlayAttackPresentation();
@@ -64,4 +65,9 @@ private:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true", ClampMin = "0.0"))
     float DestroyDelay = 4.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dialogue", meta = (AllowPrivateAccess = "true"))
+    bool bGameplayBarksEnabled = false;
+
+    bool bHasBarked = false;
 };

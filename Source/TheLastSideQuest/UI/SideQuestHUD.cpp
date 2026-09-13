@@ -27,7 +27,21 @@ void ASideQuestHUD::UpdateInteractionUI()
     InteractionWidget->SetObjective(State->GetObjectiveText());
     InteractionWidget->SetPrompt(Player->GetCurrentInteractionLabel(), Player->HasAvailableInteraction() && !Player->IsInDialogue());
     InteractionWidget->SetDialogue(Player->GetDialogueSpeaker(), Player->GetDialogueText(), Player->IsInDialogue());
+    InteractionWidget->SetGameplaySubtitle(SubtitleSpeaker, SubtitleText,
+        HasGameplaySubtitle() && !Player->IsInDialogue());
     InteractionWidget->SetEndingPresentation(State->GetEndingState(), State->GetFadeOpacity());
+}
+
+void ASideQuestHUD::ShowGameplaySubtitle(const FText& Speaker, const FText& Text, float Duration)
+{
+    SubtitleSpeaker = Speaker;
+    SubtitleText = Text;
+    SubtitleExpiresAt = GetWorld() ? GetWorld()->GetTimeSeconds() + FMath::Max(Duration, 0.5f) : 0.0f;
+}
+
+bool ASideQuestHUD::HasGameplaySubtitle() const
+{
+    return GetWorld() && !SubtitleText.IsEmpty() && GetWorld()->GetTimeSeconds() < SubtitleExpiresAt;
 }
 
 void ASideQuestHUD::DrawHUD()

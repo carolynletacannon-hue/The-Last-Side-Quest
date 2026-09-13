@@ -15,6 +15,15 @@ public:
     virtual void DrawHUD() override;
     void UpdateInteractionUI();
 
+    /** Shows a short, non-modal line without locking movement, attacks, or interaction. */
+    UFUNCTION(BlueprintCallable, Category = "UI|Subtitles")
+    void ShowGameplaySubtitle(const FText& Speaker, const FText& Text, float Duration = 3.0f);
+
+    bool HasGameplaySubtitle() const;
+
 private:
     UPROPERTY() TObjectPtr<class UInteractionDialogueWidget> InteractionWidget;
+    FText SubtitleSpeaker;
+    FText SubtitleText;
+    float SubtitleExpiresAt = 0.0f;
 };

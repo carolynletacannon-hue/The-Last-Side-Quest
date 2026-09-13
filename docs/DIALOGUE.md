@@ -43,9 +43,9 @@ The hero reports the temple, goblins, prophecies, attempted murder, and lightnin
 
 Mildred begins asking the hero to find Mr. Whiskers, her other cat, who was last seen flying toward the mountains. The hero repeatedly refuses, and the game cuts to black.
 
-## Presentation-only lines and barks
+## Non-blocking gameplay subtitles
 
-These should be delivered through Blueprint presentation events or a future non-blocking subtitle/bark function. They should not use the modal interaction dialogue during active combat.
+These are implemented through the HUD's non-modal subtitle channel. They never pause movement, attacks, or interaction.
 
 - Boss reveal: **MITTENS — DEVOURER OF WORLDS** / Player: “Oh, come on.”
 - Pounce: Player: “Bad cat!”
@@ -56,7 +56,7 @@ These should be delivered through Blueprint presentation events or a future non-
 - Ruins entrance: Player: “Of course the missing cat went into the ancient cursed ruins.”
 - Credits stinger: Mildred: “Mr. Whiskers?” / massive roar / Mildred: “There you are!”
 
-## Optional enemy barks
+## Enemy barks
 
 - Goblin: “Not again!”
 - Goblin: “It's wearing armor now!”
@@ -66,4 +66,4 @@ These should be delivered through Blueprint presentation events or a future non-
 - Player: “I'm not here for your food.”
 - Goblin: “That's what the beast wanted!”
 
-Enemy barks should be short, infrequent, and non-blocking so they do not interrupt combat.
+Each spawned forest goblin may deliver one short, randomly selected bark when it first sees the player. The shared HUD prevents several goblins from talking over one another. Slimes and skeletons do not use goblin dialogue.

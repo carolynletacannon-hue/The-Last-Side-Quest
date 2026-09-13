@@ -96,6 +96,7 @@ private:
 
     float NextAttackTime = 0.0f;
     float LastDamageTime = -100.0f;
+    bool bMittensDamageBarkPlayed = false;
 
     /** Replace these defaults in a presentation Blueprint if different bindings are required. */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))

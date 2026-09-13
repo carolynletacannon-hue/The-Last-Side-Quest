@@ -71,6 +71,19 @@ void UInteractionDialogueWidget::NativeOnInitialized()
     UCanvasPanelSlot* CreditsSlot = Root->AddChildToCanvas(CreditsPanel);
     CreditsSlot->SetAnchors(FAnchors(.5f,.5f)); CreditsSlot->SetAlignment(FVector2D(.5f)); CreditsSlot->SetAutoSize(true);
     CreditsPanel->SetVisibility(ESlateVisibility::Collapsed);
+
+    SubtitlePanel = WidgetTree->ConstructWidget<UBorder>();
+    SubtitlePanel->SetBrushColor(FLinearColor(0.01f, 0.01f, 0.015f, 0.82f));
+    SubtitlePanel->SetPadding(FMargin(22, 14));
+    UVerticalBox* SubtitleBox = WidgetTree->ConstructWidget<UVerticalBox>();
+    SubtitleSpeakerText = AddCenteredText(WidgetTree, SubtitleBox, FText::GetEmpty(), 22, FLinearColor(1.0f, .78f, .3f));
+    SubtitleBodyText = AddCenteredText(WidgetTree, SubtitleBox, FText::GetEmpty(), 20, FLinearColor::White);
+    SubtitleBodyText->SetAutoWrapText(true);
+    SubtitlePanel->SetContent(SubtitleBox);
+    UCanvasPanelSlot* SubtitleSlot = Root->AddChildToCanvas(SubtitlePanel);
+    SubtitleSlot->SetAnchors(FAnchors(.12f, .70f, .88f, .82f));
+    SubtitleSlot->SetOffsets(FMargin(0));
+    SubtitlePanel->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void UInteractionDialogueWidget::SetEndingPresentation(EEndingPresentationState State, float FadeOpacity)
@@ -98,4 +111,12 @@ void UInteractionDialogueWidget::SetDialogue(const FText& Speaker, const FText& 
     if (!DialoguePanel) return;
     SpeakerText->SetText(Speaker); DialogueText->SetText(Text);
     DialoguePanel->SetVisibility(bVisible ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
+}
+
+void UInteractionDialogueWidget::SetGameplaySubtitle(const FText& Speaker, const FText& Text, bool bVisible)
+{
+    if (!SubtitlePanel) return;
+    SubtitleSpeakerText->SetText(Speaker);
+    SubtitleBodyText->SetText(Text);
+    SubtitlePanel->SetVisibility(bVisible ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
 }

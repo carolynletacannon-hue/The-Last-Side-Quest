@@ -22,6 +22,7 @@
 #include "Interaction/SideQuestInteractable.h"
 #include "Quest/SideQuestGameState.h"
 #include "TimerManager.h"
+#include "UI/SideQuestHUD.h"
 
 ASideQuestCharacter::ASideQuestCharacter()
 {
@@ -336,6 +337,16 @@ void ASideQuestCharacter::HandleHealthChanged(UHealthComponent* Component, float
 {
     LastDamageTime = GetWorld()->GetTimeSeconds();
     PlayHitPresentation();
+    const ASideQuestGameState* State = GetWorld()->GetGameState<ASideQuestGameState>();
+    if (!bMittensDamageBarkPlayed && HealthDelta < 0.0f && State &&
+        State->GetQuestStep() == ESideQuestStep::FightMittens && Component->GetHealthFraction() <= 0.5f)
+    {
+        bMittensDamageBarkPlayed = true;
+        if (APlayerController* PC = Cast<APlayerController>(GetController()))
+            if (ASideQuestHUD* HUD = PC->GetHUD<ASideQuestHUD>())
+                HUD->ShowGameplaySubtitle(FText::FromString(TEXT("Player")),
+                    FText::FromString(TEXT("Mildred owes me substantially more than three gold!")), 3.0f);
+    }
 }
 
 void ASideQuestCharacter::HandleDeath(UHealthComponent* Component, AActor* DamageCauser)

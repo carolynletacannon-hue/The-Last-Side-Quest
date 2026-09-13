@@ -38,6 +38,8 @@ protected:
 private:
     void BeginFinalDialogue();
     void ShowCredits();
+    void ShowCreditsRoar();
+    void ShowCreditsFinalLine();
     void SetEndingState(EEndingPresentationState NewState);
 
     UPROPERTY(VisibleInstanceOnly, Category = "Quest")
@@ -46,5 +48,6 @@ private:
     UPROPERTY() TObjectPtr<class ASideQuestCharacter> EndingPlayer;
     UPROPERTY() TObjectPtr<class AQuestInteractableActor> EndingMildred;
     FTimerHandle EndingTimer;
+    FTimerHandle CreditsStingerTimer;
     float FadeStartedAt = 0.0f;
 };

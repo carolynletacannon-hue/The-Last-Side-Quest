@@ -6,10 +6,12 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/DamageType.h"
+#include "GameFramework/PlayerController.h"
 #include "Engine/StaticMesh.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/SideQuestCharacter.h"
 #include "Quest/SideQuestGameState.h"
+#include "UI/SideQuestHUD.h"
 
 AMittensBoss::AMittensBoss()
 {
@@ -82,6 +84,7 @@ void AMittensBoss::BeginEncounter(APawn* Player)
     PlayEncounterStartPresentation();
     StartBossMusic();
     PlayMeowPresentation();
+    ShowSubtitle(TEXT("Player"), TEXT("Oh, come on."), 3.0f, false);
     NextAttackTime = GetWorld()->GetTimeSeconds() + 1.5f;
 }
 
@@ -139,6 +142,8 @@ void AMittensBoss::ChooseAttack()
 
 void AMittensBoss::BeginPounce()
 {
+    ++PounceCount;
+    if (PounceCount == 1) ShowSubtitle(TEXT("Player"), TEXT("Bad cat!"));
     MoveStart = GetActorLocation();
     FVector Direction = (CombatTarget->GetActorLocation() - MoveStart).GetSafeNormal2D();
     MoveTarget = ClampToArena(MoveStart + Direction * FMath::Min(PounceRange, FVector::Dist2D(MoveStart, CombatTarget->GetActorLocation()) + 100.0f));
@@ -147,6 +152,11 @@ void AMittensBoss::BeginPounce()
 
 void AMittensBoss::BeginChaosDash()
 {
+    ++ChaosDashCount;
+    if (ChaosDashCount == 1)
+        ShowSubtitle(TEXT("Player"), TEXT("WHY ARE YOU SO FAST?!"));
+    else if (ChaosDashCount == 2)
+        ShowSubtitle(TEXT("Mittens"), TEXT("Mrrrp."));
     MoveStart = GetActorLocation();
     const FVector Across = (MoveStart - ArenaCenter).GetSafeNormal2D();
     const FVector Direction = Across.IsNearlyZero() ? GetActorRightVector() : -Across;
@@ -181,6 +191,21 @@ FVector AMittensBoss::ClampToArena(const FVector& Location) const
 void AMittensBoss::HandleHealthChanged(UHealthComponent*, float, float Delta, AActor* DamageCauser)
 {
     if (!bDefeated && Delta < 0) { PlayHitPresentation(); if (!CombatTarget) CombatTarget = Cast<APawn>(DamageCauser); }
+    if (!bDefeated && !bLowHealthBarkPlayed && HealthComponent->GetHealthFraction() <= 0.3f)
+    {
+        bLowHealthBarkPlayed = true;
+        ShowSubtitle(TEXT("Player"), TEXT("That's right. Fear me."), 2.5f, false);
+    }
+}
+
+void AMittensBoss::ShowSubtitle(const TCHAR* Speaker, const TCHAR* Text, float Duration, bool bOnlyIfClear) const
+{
+    if (!GetWorld()) return;
+    if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+    {
+        if (ASideQuestHUD* HUD = PC->GetHUD<ASideQuestHUD>(); HUD && (!bOnlyIfClear || !HUD->HasGameplaySubtitle()))
+            HUD->ShowGameplaySubtitle(FText::FromString(FString(Speaker)), FText::FromString(FString(Text)), Duration);
+    }
 }
 
 void AMittensBoss::HandleDefeat(UHealthComponent*, AActor*)

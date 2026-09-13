@@ -15,6 +15,7 @@ public:
     void SetObjective(const FText& Text);
     void SetPrompt(const FText& Text, bool bVisible);
     void SetDialogue(const FText& Speaker, const FText& Text, bool bVisible);
+    void SetGameplaySubtitle(const FText& Speaker, const FText& Text, bool bVisible);
     void SetEndingPresentation(EEndingPresentationState State, float FadeOpacity);
 protected:
     virtual void NativeOnInitialized() override;
@@ -23,7 +24,10 @@ private:
     UPROPERTY() TObjectPtr<UTextBlock> PromptText;
     UPROPERTY() TObjectPtr<UTextBlock> SpeakerText;
     UPROPERTY() TObjectPtr<UTextBlock> DialogueText;
+    UPROPERTY() TObjectPtr<UTextBlock> SubtitleSpeakerText;
+    UPROPERTY() TObjectPtr<UTextBlock> SubtitleBodyText;
     UPROPERTY() TObjectPtr<class UBorder> DialoguePanel;
+    UPROPERTY() TObjectPtr<class UBorder> SubtitlePanel;
     UPROPERTY() TObjectPtr<class UBorder> QuestCompletePanel;
     UPROPERTY() TObjectPtr<class UBorder> FadePanel;
     UPROPERTY() TObjectPtr<class UVerticalBox> CreditsPanel;

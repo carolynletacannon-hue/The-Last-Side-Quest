@@ -260,13 +260,17 @@ void APhase4World::BeginPlay()
     AQuestInteractableActor* Lever = SpawnInteractable(LeverClass, {10500,-250,60}, FText::FromString(TEXT("Pull lever")), ESideQuestStep::OpenRuinsGate, ESideQuestStep::ReachMittens, true, {});
     Lever->OnInteractionFinished.AddDynamic(this, &ThisClass::OpenRuinsGate);
 
-    auto SpawnTrigger = [&](const FVector& Location, ESideQuestStep Required, ESideQuestStep Result)
+    auto SpawnTrigger = [&](const FVector& Location, ESideQuestStep Required, ESideQuestStep Result,
+        const TCHAR* Subtitle)
     {
         AQuestProgressTrigger* Trigger = World->SpawnActor<AQuestProgressTrigger>(Location, FRotator::ZeroRotator);
-        Trigger->GetCollisionComponent()->SetWorldScale3D({2,7,3}); Trigger->Configure(Required, Result);
+        Trigger->GetCollisionComponent()->SetWorldScale3D({2,7,3});
+        Trigger->Configure(Required, Result, FText::FromString(TEXT("Player")), FText::FromString(FString(Subtitle)));
     };
-    SpawnTrigger({3400,150,80}, ESideQuestStep::FollowForestClue, ESideQuestStep::TalkToGoblin);
-    SpawnTrigger({9000,90,80}, ESideQuestStep::EnterRuins, ESideQuestStep::OpenRuinsGate);
+    SpawnTrigger({3400,150,80}, ESideQuestStep::FollowForestClue, ESideQuestStep::TalkToGoblin,
+        TEXT("Those are cat scratches. Those are... very large cat scratches."));
+    SpawnTrigger({9000,90,80}, ESideQuestStep::EnterRuins, ESideQuestStep::OpenRuinsGate,
+        TEXT("Of course the missing cat went into the ancient cursed ruins."));
     // Phase 5 owns chamber progression. Entering starts the boss; only defeat unlocks pickup.
     World->SpawnActor<AMittensBoss>(MittensBossClass ? MittensBossClass : AMittensBoss::StaticClass(),
         FVector(15900,0,40), FRotator(0,180,0));
@@ -286,7 +290,9 @@ void APhase4World::BeginPlay()
     for (int32 Index = 0; Index < ForestEnemies.Num(); ++Index)
     {
         TSubclassOf<APawn> Class = Index % 2 == 0 ? GoblinEnemyClass : SlimeEnemyClass;
-        World->SpawnActor<APawn>(Class ? Class : ASideQuestEnemy::StaticClass(), ForestEnemies[Index], FRotator::ZeroRotator);
+        APawn* Enemy = World->SpawnActor<APawn>(Class ? Class : ASideQuestEnemy::StaticClass(), ForestEnemies[Index], FRotator::ZeroRotator);
+        if (ASideQuestEnemy* SideQuestEnemy = Cast<ASideQuestEnemy>(Enemy))
+            SideQuestEnemy->SetGameplayBarksEnabled(Index % 2 == 0);
     }
     for (const FVector& Location : TArray<FVector>{{9400,120,80},{10100,160,80},{11900,-120,80}})
         World->SpawnActor<APawn>(SkeletonEnemyClass ? SkeletonEnemyClass : ASideQuestEnemy::StaticClass(), Location, FRotator::ZeroRotator);

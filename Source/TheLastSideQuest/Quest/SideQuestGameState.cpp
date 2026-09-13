@@ -1,7 +1,9 @@
 #include "Quest/SideQuestGameState.h"
 #include "Interaction/QuestInteractableActor.h"
+#include "GameFramework/PlayerController.h"
 #include "Player/SideQuestCharacter.h"
 #include "TimerManager.h"
+#include "UI/SideQuestHUD.h"
 
 ASideQuestGameState::ASideQuestGameState()
 {
@@ -68,7 +70,32 @@ void ASideQuestGameState::FinishFinalDialogue()
 
 void ASideQuestGameState::ShowCredits()
 {
-    if (EndingState == EEndingPresentationState::Fading) SetEndingState(EEndingPresentationState::Credits);
+    if (EndingState != EEndingPresentationState::Fading) return;
+    SetEndingState(EEndingPresentationState::Credits);
+    if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+        if (ASideQuestHUD* HUD = PC->GetHUD<ASideQuestHUD>())
+            HUD->ShowGameplaySubtitle(NSLOCTEXT("Ending", "StingerMildred", "Mildred"),
+                NSLOCTEXT("Ending", "StingerWhiskers", "Mr. Whiskers?"), 2.0f);
+    GetWorldTimerManager().SetTimer(CreditsStingerTimer, this, &ThisClass::ShowCreditsRoar, 2.0f, false);
+}
+
+void ASideQuestGameState::ShowCreditsRoar()
+{
+    if (EndingState != EEndingPresentationState::Credits) return;
+    if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+        if (ASideQuestHUD* HUD = PC->GetHUD<ASideQuestHUD>())
+            HUD->ShowGameplaySubtitle(FText::GetEmpty(),
+                NSLOCTEXT("Ending", "StingerRoar", "[A massive roar shakes the mountains.]"), 2.0f);
+    GetWorldTimerManager().SetTimer(CreditsStingerTimer, this, &ThisClass::ShowCreditsFinalLine, 2.0f, false);
+}
+
+void ASideQuestGameState::ShowCreditsFinalLine()
+{
+    if (EndingState != EEndingPresentationState::Credits) return;
+    if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+        if (ASideQuestHUD* HUD = PC->GetHUD<ASideQuestHUD>())
+            HUD->ShowGameplaySubtitle(NSLOCTEXT("Ending", "StingerMildredFinal", "Mildred"),
+                NSLOCTEXT("Ending", "StingerFound", "There you are!"), 3.0f);
 }
 
 void ASideQuestGameState::SetEndingState(EEndingPresentationState NewState)

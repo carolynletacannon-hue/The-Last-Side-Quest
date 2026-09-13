@@ -4,7 +4,9 @@
 #include "Components/CapsuleComponent.h"
 #include "Enemy/SideQuestEnemyAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PlayerController.h"
 #include "Perception/PawnSensingComponent.h"
+#include "UI/SideQuestHUD.h"
 
 ASideQuestEnemy::ASideQuestEnemy()
 {
@@ -36,6 +38,21 @@ void ASideQuestEnemy::HandlePawnSeen(APawn* SeenPawn)
 {
     if (!HealthComponent->IsDead())
     {
+        if (bGameplayBarksEnabled && !bHasBarked)
+        {
+            if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+            {
+                if (ASideQuestHUD* HUD = PC->GetHUD<ASideQuestHUD>(); HUD && !HUD->HasGameplaySubtitle())
+                {
+                    static const TCHAR* Barks[] = {
+                        TEXT("Not again!"), TEXT("It's wearing armor now!"), TEXT("Protect the food!"),
+                        TEXT("The fluffy one has returned!")};
+                    HUD->ShowGameplaySubtitle(FText::FromString(TEXT("Goblin")),
+                        FText::FromString(Barks[FMath::RandRange(0, UE_ARRAY_COUNT(Barks) - 1)]), 2.5f);
+                    bHasBarked = true;
+                }
+            }
+        }
         if (ASideQuestEnemyAIController* EnemyController = Cast<ASideQuestEnemyAIController>(GetController()))
         {
             EnemyController->SetCombatTarget(SeenPawn);

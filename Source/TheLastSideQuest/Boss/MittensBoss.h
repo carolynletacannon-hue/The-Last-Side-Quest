@@ -72,6 +72,7 @@ private:
     void BeginChaosDash();
     void FinishAttack(float RecoverySeconds);
     void DamageTargetOnce(float Damage, float Radius);
+    void ShowSubtitle(const TCHAR* Speaker, const TCHAR* Text, float Duration = 2.5f, bool bOnlyIfClear = true) const;
     FVector ClampToArena(const FVector& Location) const;
 
     UFUNCTION() void HandleEntranceOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -90,5 +91,8 @@ private:
     bool bEncounterActive = false;
     bool bDefeated = false;
     bool bDamageApplied = false;
+    bool bLowHealthBarkPlayed = false;
+    int32 PounceCount = 0;
+    int32 ChaosDashCount = 0;
     EAttackState AttackState = EAttackState::Idle;
 };
