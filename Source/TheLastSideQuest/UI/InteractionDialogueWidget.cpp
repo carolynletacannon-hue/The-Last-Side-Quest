@@ -22,6 +22,14 @@ UTextBlock* AddCenteredText(UWidgetTree* Tree, UVerticalBox* Box, const FText& T
 void UInteractionDialogueWidget::NativeOnInitialized()
 {
     Super::NativeOnInitialized();
+    if (!WidgetTree->RootWidget)
+    {
+        BuildFallbackLayout();
+    }
+}
+
+void UInteractionDialogueWidget::BuildFallbackLayout()
+{
     UCanvasPanel* Root = WidgetTree->ConstructWidget<UCanvasPanel>();
     WidgetTree->RootWidget = Root;
 
@@ -102,15 +110,35 @@ void UInteractionDialogueWidget::SetEndingPresentation(EEndingPresentationState 
 void UInteractionDialogueWidget::SetObjective(const FText& Text) { if (ObjectiveText) ObjectiveText->SetText(FText::Format(NSLOCTEXT("HUD", "Objective", "OBJECTIVE: {0}"), Text)); }
 void UInteractionDialogueWidget::SetPrompt(const FText& Text, bool bVisible)
 {
-    if (!PromptText) return;
-    PromptText->SetText(FText::Format(NSLOCTEXT("HUD", "Prompt", "[E] {0}"), Text));
-    PromptText->SetVisibility(bVisible ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
+    if (PromptText)
+    {
+        PromptText->SetText(FText::Format(NSLOCTEXT("HUD", "Prompt", "[E] {0}"), Text));
+        PromptText->SetVisibility(bVisible ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
+    }
+    if (bVisible != bPreviousPromptVisible)
+    {
+        OnPromptVisibilityChanged(bVisible);
+        bPreviousPromptVisible = bVisible;
+    }
 }
 void UInteractionDialogueWidget::SetDialogue(const FText& Speaker, const FText& Text, bool bVisible)
 {
-    if (!DialoguePanel) return;
-    SpeakerText->SetText(Speaker); DialogueText->SetText(Text);
-    DialoguePanel->SetVisibility(bVisible ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
+    if (SpeakerText) SpeakerText->SetText(Speaker);
+    if (DialogueText) DialogueText->SetText(Text);
+    if (DialoguePanel) DialoguePanel->SetVisibility(bVisible ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
+    if (bVisible != bPreviousDialogueVisible)
+    {
+        OnDialogueVisibilityChanged(bVisible);
+        bPreviousDialogueVisible = bVisible;
+    }
+}
+
+void UInteractionDialogueWidget::SetGameplaySubtitle(const FText& Speaker, const FText& Text, bool bVisible)
+{
+    if (!SubtitlePanel) return;
+    SubtitleSpeakerText->SetText(Speaker);
+    SubtitleBodyText->SetText(Text);
+    SubtitlePanel->SetVisibility(bVisible ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
 }
 
 void UInteractionDialogueWidget::SetGameplaySubtitle(const FText& Speaker, const FText& Text, bool bVisible)

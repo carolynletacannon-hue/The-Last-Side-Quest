@@ -8,14 +8,23 @@
 #include "Player/SideQuestCharacter.h"
 #include "Quest/SideQuestGameState.h"
 #include "UI/InteractionDialogueWidget.h"
+#include "UI/CombatStatusWidget.h"
+
+ASideQuestHUD::ASideQuestHUD()
+{
+    InteractionWidgetClass = UInteractionDialogueWidget::StaticClass();
+    CombatWidgetClass = UCombatStatusWidget::StaticClass();
+}
 
 void ASideQuestHUD::BeginPlay()
 {
     Super::BeginPlay();
     if (APlayerController* PC = GetOwningPlayerController())
     {
-        InteractionWidget = CreateWidget<UInteractionDialogueWidget>(PC, UInteractionDialogueWidget::StaticClass());
-        if (InteractionWidget) InteractionWidget->AddToViewport();
+        InteractionWidget = CreateWidget<UInteractionDialogueWidget>(PC, InteractionWidgetClass);
+        if (InteractionWidget) InteractionWidget->AddToViewport(10);
+        CombatWidget = CreateWidget<UCombatStatusWidget>(PC, CombatWidgetClass);
+        if (CombatWidget) CombatWidget->AddToViewport(0);
     }
 }
 
@@ -56,53 +65,33 @@ void ASideQuestHUD::DrawHUD()
     }
 
     const ASideQuestGameState* State = GetWorld()->GetGameState<ASideQuestGameState>();
-    if (State && State->HasEndingBegun()) return;
+    if (State && State->HasEndingBegun())
+    {
+        if (CombatWidget) CombatWidget->SetVisibility(ESlateVisibility::Collapsed);
+        return;
+    }
+    if (CombatWidget) CombatWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
 
     const UHealthComponent* Health = Player->GetHealthComponent();
-    const float BarX = 40.0f;
-    const float BarY = Canvas->ClipY - 70.0f;
-    const float BarWidth = 280.0f;
-    const float BarHeight = 22.0f;
-    DrawRect(FLinearColor(0.02f, 0.02f, 0.02f, 0.85f), BarX - 3.0f, BarY - 3.0f, BarWidth + 6.0f, BarHeight + 6.0f);
-    DrawRect(FLinearColor(0.7f, 0.05f, 0.03f), BarX, BarY, BarWidth * Health->GetHealthFraction(), BarHeight);
-    DrawText(FString::Printf(TEXT("HEALTH  %.0f / %.0f"), Health->GetHealth(), Health->GetMaxHealth()),
-        FLinearColor::White, BarX, BarY - 25.0f, GEngine->GetSmallFont(), 1.0f, false);
+    if (CombatWidget) CombatWidget->SetPlayerHealth(Health->GetHealth(), Health->GetMaxHealth());
 
     const float DamageAge = GetWorld()->GetTimeSeconds() - Player->GetLastDamageTime();
     if (DamageAge < 0.25f)
     {
-        DrawRect(FLinearColor(0.65f, 0.0f, 0.0f, 0.2f * (1.0f - DamageAge / 0.25f)), 0.0f, 0.0f, Canvas->ClipX, Canvas->ClipY);
+        if (CombatWidget) CombatWidget->SetDamageFlash(0.2f * (1.0f - DamageAge / 0.25f));
     }
+    else if (CombatWidget) CombatWidget->SetDamageFlash(0.f);
 
+    bool bBossVisible = false;
     for (TActorIterator<AMittensBoss> It(GetWorld()); It; ++It)
     {
         if (!It->IsEncounterActive()) continue;
         const UHealthComponent* BossHealth = It->GetHealthComponent();
-        const float BossWidth = FMath::Min(Canvas->ClipX * .62f, 760.0f);
-        const float BossX = (Canvas->ClipX - BossWidth) * .5f;
-        const float BossY = Canvas->ClipY - 118.0f;
-        const FString BossTitle = TEXT("MITTENS — DEVOURER OF WORLDS");
-        float TitleWidth = 0.0f, TitleHeight = 0.0f;
-        GetTextSize(BossTitle, TitleWidth, TitleHeight, GEngine->GetMediumFont(), 1.2f);
-        DrawText(BossTitle, FLinearColor(1.0f, .78f, .3f), (Canvas->ClipX - TitleWidth) * .5f,
-            BossY - 32.0f, GEngine->GetMediumFont(), 1.2f, false);
-        DrawRect(FLinearColor(.01f, .005f, .015f, .95f), BossX - 4, BossY - 4, BossWidth + 8, 28);
-        DrawRect(FLinearColor(.48f, .03f, .65f), BossX, BossY, BossWidth * BossHealth->GetHealthFraction(), 20);
+        if (CombatWidget) CombatWidget->SetBossHealth(NSLOCTEXT("HUD", "MittensBossName", "MITTENS — DEVOURER OF WORLDS"), BossHealth->GetHealth(), BossHealth->GetMaxHealth(), true);
+        bBossVisible = true;
         break;
     }
+    if (!bBossVisible && CombatWidget) CombatWidget->SetBossHealth(FText::GetEmpty(), 0.f, 1.f, false);
 
-    if (Player->IsDead())
-    {
-        DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.72f), 0.0f, 0.0f, Canvas->ClipX, Canvas->ClipY);
-        const FString Defeated = TEXT("YOU HAVE FALLEN");
-        const FString Restart = TEXT("Press R / Menu to restart");
-        float TextWidth = 0.0f;
-        float TextHeight = 0.0f;
-        GetTextSize(Defeated, TextWidth, TextHeight, GEngine->GetLargeFont(), 1.5f);
-        DrawText(Defeated, FLinearColor(0.9f, 0.12f, 0.06f), (Canvas->ClipX - TextWidth) * 0.5f,
-            Canvas->ClipY * 0.42f, GEngine->GetLargeFont(), 1.5f, false);
-        GetTextSize(Restart, TextWidth, TextHeight, GEngine->GetMediumFont());
-        DrawText(Restart, FLinearColor::White, (Canvas->ClipX - TextWidth) * 0.5f,
-            Canvas->ClipY * 0.53f, GEngine->GetMediumFont(), 1.0f, false);
-    }
+    if (CombatWidget) CombatWidget->SetDefeated(Player->IsDead());
 }
