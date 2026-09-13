@@ -28,6 +28,12 @@ public:
     UHealthComponent* GetHealthComponent() const { return HealthComponent; }
     bool IsDead() const;
     float GetLastDamageTime() const { return LastDamageTime; }
+
+    UFUNCTION(BlueprintPure, Category = "Combat")
+    float GetLastCombatTime() const { return LastCombatTime; }
+
+    UFUNCTION(BlueprintPure, Category = "Combat")
+    bool IsDodging() const;
     bool HasAvailableInteraction() const { return IsValid(CurrentInteractable); }
     bool IsInDialogue() const { return DialogueIndex != INDEX_NONE; }
     FText GetCurrentInteractionLabel() const;
@@ -57,7 +63,10 @@ private:
     void LookYaw(const FInputActionValue& Value);
     void LookPitch(const FInputActionValue& Value);
     void StartJump();
-    void Attack();
+    void LightAttack();
+    void HeavyAttack();
+    void Dodge();
+    void PerformAttack(UAnimMontage* Montage, float Damage, float Cooldown);
     void RestartAfterDeath();
     void QuitFromCredits();
     void Interact();
@@ -79,11 +88,26 @@ private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UHealthComponent> HealthComponent;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
-    TObjectPtr<UAnimMontage> AttackMontage;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Animation", meta = (AllowPrivateAccess = "true"))
+    TArray<TObjectPtr<UAnimMontage>> LightAttackMontages;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Animation", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UAnimMontage> HeavyAttackMontage;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Animation", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UAnimMontage> DodgeMontage;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Animation", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UAnimMontage> HitReactMontage;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Animation", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UAnimMontage> DeathMontage;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true", ClampMin = "0.0"))
     float AttackDamage = 34.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true", ClampMin = "0.0"))
+    float HeavyAttackDamage = 55.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true", ClampMin = "25.0"))
     float AttackReach = 165.0f;
@@ -94,8 +118,24 @@ private:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true", ClampMin = "0.1"))
     float AttackCooldown = 0.55f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true", ClampMin = "0.1"))
+    float HeavyAttackCooldown = 1.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true", ClampMin = "0.0"))
+    float ComboResetTime = 1.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true", ClampMin = "0.0"))
+    float DodgeStrength = 650.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true", ClampMin = "0.0"))
+    float DodgeDuration = 0.55f;
+
     float NextAttackTime = 0.0f;
     float LastDamageTime = -100.0f;
+    float LastCombatTime = -100.0f;
+    float LastLightAttackTime = -100.0f;
+    float DodgeEndTime = -100.0f;
+    int32 LightComboIndex = 0;
     bool bMittensDamageBarkPlayed = false;
 
     /** Replace these defaults in a presentation Blueprint if different bindings are required. */
@@ -119,6 +159,12 @@ private:
 
     UPROPERTY(EditDefaultsOnly, Category = "Input")
     TObjectPtr<UInputAction> AttackAction;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Input")
+    TObjectPtr<UInputAction> HeavyAttackAction;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Input")
+    TObjectPtr<UInputAction> DodgeAction;
 
     UPROPERTY(EditDefaultsOnly, Category = "Input")
     TObjectPtr<UInputAction> RestartAction;
