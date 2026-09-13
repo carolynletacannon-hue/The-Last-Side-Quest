@@ -60,6 +60,8 @@ ASideQuestCharacter::ASideQuestCharacter()
     LookPitchAction = CreateDefaultSubobject<UInputAction>(TEXT("LookPitchAction"));
     JumpAction = CreateDefaultSubobject<UInputAction>(TEXT("JumpAction"));
     AttackAction = CreateDefaultSubobject<UInputAction>(TEXT("AttackAction"));
+    HeavyAttackAction = CreateDefaultSubobject<UInputAction>(TEXT("HeavyAttackAction"));
+    DodgeAction = CreateDefaultSubobject<UInputAction>(TEXT("DodgeAction"));
     RestartAction = CreateDefaultSubobject<UInputAction>(TEXT("RestartAction"));
     InteractAction = CreateDefaultSubobject<UInputAction>(TEXT("InteractAction"));
     QuitAction = CreateDefaultSubobject<UInputAction>(TEXT("QuitAction"));
@@ -70,6 +72,8 @@ ASideQuestCharacter::ASideQuestCharacter()
     LookPitchAction->ValueType = EInputActionValueType::Axis1D;
     JumpAction->ValueType = EInputActionValueType::Boolean;
     AttackAction->ValueType = EInputActionValueType::Boolean;
+    HeavyAttackAction->ValueType = EInputActionValueType::Boolean;
+    DodgeAction->ValueType = EInputActionValueType::Boolean;
     RestartAction->ValueType = EInputActionValueType::Boolean;
     InteractAction->ValueType = EInputActionValueType::Boolean;
     QuitAction->ValueType = EInputActionValueType::Boolean;
@@ -91,6 +95,10 @@ ASideQuestCharacter::ASideQuestCharacter()
     DefaultMappingContext->MapKey(JumpAction, EKeys::Gamepad_FaceButton_Bottom);
     DefaultMappingContext->MapKey(AttackAction, EKeys::LeftMouseButton);
     DefaultMappingContext->MapKey(AttackAction, EKeys::Gamepad_RightTrigger);
+    DefaultMappingContext->MapKey(HeavyAttackAction, EKeys::RightMouseButton);
+    DefaultMappingContext->MapKey(HeavyAttackAction, EKeys::Gamepad_LeftTrigger);
+    DefaultMappingContext->MapKey(DodgeAction, EKeys::LeftShift);
+    DefaultMappingContext->MapKey(DodgeAction, EKeys::Gamepad_FaceButton_Right);
     DefaultMappingContext->MapKey(RestartAction, EKeys::R);
     DefaultMappingContext->MapKey(RestartAction, EKeys::Gamepad_Special_Right);
     DefaultMappingContext->MapKey(InteractAction, EKeys::E);
@@ -102,7 +110,9 @@ ASideQuestCharacter::ASideQuestCharacter()
 float ASideQuestCharacter::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
     AController* EventInstigator, AActor* DamageCauser)
 {
-    return IsGameplayLocked() ? 0.0f : Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+    return (IsGameplayLocked() || IsDodging())
+        ? 0.0f
+        : Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
 void ASideQuestCharacter::BeginPlay()
@@ -140,7 +150,9 @@ void ASideQuestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
     EnhancedInput->BindAction(LookPitchAction, ETriggerEvent::Triggered, this, &ThisClass::LookPitch);
     EnhancedInput->BindAction(JumpAction, ETriggerEvent::Started, this, &ThisClass::StartJump);
     EnhancedInput->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-    EnhancedInput->BindAction(AttackAction, ETriggerEvent::Started, this, &ThisClass::Attack);
+    EnhancedInput->BindAction(AttackAction, ETriggerEvent::Started, this, &ThisClass::LightAttack);
+    EnhancedInput->BindAction(HeavyAttackAction, ETriggerEvent::Started, this, &ThisClass::HeavyAttack);
+    EnhancedInput->BindAction(DodgeAction, ETriggerEvent::Started, this, &ThisClass::Dodge);
     EnhancedInput->BindAction(RestartAction, ETriggerEvent::Started, this, &ThisClass::RestartAfterDeath);
     EnhancedInput->BindAction(InteractAction, ETriggerEvent::Started, this, &ThisClass::Interact);
     EnhancedInput->BindAction(QuitAction, ETriggerEvent::Started, this, &ThisClass::QuitFromCredits);
@@ -269,7 +281,7 @@ bool ASideQuestCharacter::IsDead() const
     return HealthComponent && HealthComponent->IsDead();
 }
 
-void ASideQuestCharacter::Attack()
+void ASideQuestCharacter::LightAttack()
 {
     const float CurrentTime = GetWorld()->GetTimeSeconds();
     if (IsDead() || IsInDialogue() || IsGameplayLocked() || CurrentTime < NextAttackTime)
@@ -277,11 +289,30 @@ void ASideQuestCharacter::Attack()
         return;
     }
 
-    NextAttackTime = CurrentTime + AttackCooldown;
-    if (AttackMontage)
-    {
-        PlayAnimMontage(AttackMontage);
-    }
+    if (CurrentTime - LastLightAttackTime > ComboResetTime)
+        LightComboIndex = 0;
+
+    UAnimMontage* Montage = LightAttackMontages.IsValidIndex(LightComboIndex)
+        ? LightAttackMontages[LightComboIndex] : nullptr;
+    PerformAttack(Montage, AttackDamage, AttackCooldown);
+    LastLightAttackTime = CurrentTime;
+    LightComboIndex = LightAttackMontages.IsEmpty() ? 0 : (LightComboIndex + 1) % LightAttackMontages.Num();
+}
+
+void ASideQuestCharacter::HeavyAttack()
+{
+    const float CurrentTime = GetWorld()->GetTimeSeconds();
+    if (IsDead() || IsInDialogue() || IsGameplayLocked() || CurrentTime < NextAttackTime) return;
+    LightComboIndex = 0;
+    PerformAttack(HeavyAttackMontage, HeavyAttackDamage, HeavyAttackCooldown);
+}
+
+void ASideQuestCharacter::PerformAttack(UAnimMontage* Montage, float Damage, float Cooldown)
+{
+    const float CurrentTime = GetWorld()->GetTimeSeconds();
+    NextAttackTime = CurrentTime + Cooldown;
+    LastCombatTime = CurrentTime;
+    if (Montage) PlayAnimMontage(Montage);
 
     const FVector Start = GetActorLocation() + FVector(0.0f, 0.0f, 50.0f);
     const FVector End = Start + GetActorForwardVector() * AttackReach;
@@ -299,11 +330,31 @@ void ASideQuestCharacter::Attack()
                 HitActor->FindComponentByClass<UHealthComponent>())
             {
                 DamagedActors.Add(HitActor);
-                UGameplayStatics::ApplyDamage(HitActor, AttackDamage, GetController(), this, UDamageType::StaticClass());
+                UGameplayStatics::ApplyDamage(HitActor, Damage, GetController(), this, UDamageType::StaticClass());
                 PlayAttackHitPresentation(HitActor, Hit.ImpactPoint);
             }
         }
     }
+}
+
+void ASideQuestCharacter::Dodge()
+{
+    const float CurrentTime = GetWorld()->GetTimeSeconds();
+    if (IsDead() || IsInDialogue() || IsGameplayLocked() || CurrentTime < NextAttackTime) return;
+
+    DodgeEndTime = CurrentTime + DodgeDuration;
+    NextAttackTime = DodgeEndTime;
+    LastCombatTime = CurrentTime;
+    if (DodgeMontage) PlayAnimMontage(DodgeMontage);
+
+    FVector DodgeDirection = GetLastMovementInputVector().GetSafeNormal2D();
+    if (DodgeDirection.IsNearlyZero()) DodgeDirection = GetActorForwardVector();
+    LaunchCharacter(DodgeDirection * DodgeStrength, true, false);
+}
+
+bool ASideQuestCharacter::IsDodging() const
+{
+    return GetWorld() && GetWorld()->GetTimeSeconds() < DodgeEndTime;
 }
 
 void ASideQuestCharacter::RestartAfterDeath()
@@ -336,6 +387,11 @@ bool ASideQuestCharacter::IsGameplayLocked() const
 void ASideQuestCharacter::HandleHealthChanged(UHealthComponent* Component, float NewHealth, float HealthDelta, AActor* DamageCauser)
 {
     LastDamageTime = GetWorld()->GetTimeSeconds();
+    LastCombatTime = LastDamageTime;
+    if (HealthDelta < 0.0f && NewHealth > 0.0f && HitReactMontage)
+    {
+        PlayAnimMontage(HitReactMontage);
+    }
     PlayHitPresentation();
     const ASideQuestGameState* State = GetWorld()->GetGameState<ASideQuestGameState>();
     if (!bMittensDamageBarkPlayed && HealthDelta < 0.0f && State &&
@@ -353,5 +409,9 @@ void ASideQuestCharacter::HandleDeath(UHealthComponent* Component, AActor* Damag
 {
     StopJumping();
     GetCharacterMovement()->DisableMovement();
+    if (DeathMontage)
+    {
+        PlayAnimMontage(DeathMontage);
+    }
     PlayDeathPresentation();
 }
