@@ -3,6 +3,7 @@
 #include "Camera/CameraComponent.h"
 #include "Combat/HealthComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Engine/World.h"
@@ -52,6 +53,10 @@ ASideQuestCharacter::ASideQuestCharacter()
     FollowCamera->bUsePawnControlRotation = false;
 
     HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+    SwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SwordMesh"));
+    SwordMesh->SetupAttachment(GetMesh(), BackSwordSocket);
+    SwordMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     DefaultMappingContext = CreateDefaultSubobject<UInputMappingContext>(TEXT("DefaultMappingContext"));
     MoveForwardAction = CreateDefaultSubobject<UInputAction>(TEXT("MoveForwardAction"));
@@ -127,6 +132,7 @@ void ASideQuestCharacter::BeginPlay()
 
     HealthComponent->OnHealthChanged.AddDynamic(this, &ThisClass::HandleHealthChanged);
     HealthComponent->OnDeath.AddDynamic(this, &ThisClass::HandleDeath);
+    AttachSwordToSocket(BackSwordSocket);
 
     if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
     {
@@ -284,10 +290,18 @@ bool ASideQuestCharacter::IsDead() const
 void ASideQuestCharacter::LightAttack()
 {
     const float CurrentTime = GetWorld()->GetTimeSeconds();
-    if (IsDead() || IsInDialogue() || IsGameplayLocked() || CurrentTime < NextAttackTime)
+    if (IsDead() || IsInDialogue() || IsGameplayLocked())
     {
         return;
     }
+
+    if (!bSwordDrawn || bWeaponTransitioning)
+    {
+        PendingCombatAction = EPendingCombatAction::LightAttack;
+        if (!bWeaponTransitioning) BeginDrawSword();
+        return;
+    }
+    if (CurrentTime < NextAttackTime) return;
 
     if (CurrentTime - LastLightAttackTime > ComboResetTime)
         LightComboIndex = 0;
@@ -302,7 +316,14 @@ void ASideQuestCharacter::LightAttack()
 void ASideQuestCharacter::HeavyAttack()
 {
     const float CurrentTime = GetWorld()->GetTimeSeconds();
-    if (IsDead() || IsInDialogue() || IsGameplayLocked() || CurrentTime < NextAttackTime) return;
+    if (IsDead() || IsInDialogue() || IsGameplayLocked()) return;
+    if (!bSwordDrawn || bWeaponTransitioning)
+    {
+        PendingCombatAction = EPendingCombatAction::HeavyAttack;
+        if (!bWeaponTransitioning) BeginDrawSword();
+        return;
+    }
+    if (CurrentTime < NextAttackTime) return;
     LightComboIndex = 0;
     PerformAttack(HeavyAttackMontage, HeavyAttackDamage, HeavyAttackCooldown);
 }
@@ -313,6 +334,7 @@ void ASideQuestCharacter::PerformAttack(UAnimMontage* Montage, float Damage, flo
     NextAttackTime = CurrentTime + Cooldown;
     LastCombatTime = CurrentTime;
     if (Montage) PlayAnimMontage(Montage);
+    ScheduleAutoSheathe();
 
     const FVector Start = GetActorLocation() + FVector(0.0f, 0.0f, 50.0f);
     const FVector End = Start + GetActorForwardVector() * AttackReach;
@@ -340,7 +362,7 @@ void ASideQuestCharacter::PerformAttack(UAnimMontage* Montage, float Damage, flo
 void ASideQuestCharacter::Dodge()
 {
     const float CurrentTime = GetWorld()->GetTimeSeconds();
-    if (IsDead() || IsInDialogue() || IsGameplayLocked() || CurrentTime < NextAttackTime) return;
+    if (IsDead() || IsInDialogue() || IsGameplayLocked() || bWeaponTransitioning || CurrentTime < NextAttackTime) return;
 
     DodgeEndTime = CurrentTime + DodgeDuration;
     NextAttackTime = DodgeEndTime;
@@ -350,6 +372,80 @@ void ASideQuestCharacter::Dodge()
     FVector DodgeDirection = GetLastMovementInputVector().GetSafeNormal2D();
     if (DodgeDirection.IsNearlyZero()) DodgeDirection = GetActorForwardVector();
     LaunchCharacter(DodgeDirection * DodgeStrength, true, false);
+    if (bSwordDrawn) ScheduleAutoSheathe();
+}
+
+void ASideQuestCharacter::BeginDrawSword()
+{
+    if (bSwordDrawn || bWeaponTransitioning || IsDead()) return;
+    GetWorldTimerManager().ClearTimer(AutoSheatheTimer);
+    bWeaponTransitioning = true;
+    LastCombatTime = GetWorld()->GetTimeSeconds();
+    if (DrawReachMontage) PlayAnimMontage(DrawReachMontage);
+    GetWorldTimerManager().SetTimer(WeaponTransitionTimer, this, &ThisClass::FinishDrawReach,
+        DrawReachDuration, false);
+}
+
+void ASideQuestCharacter::FinishDrawReach()
+{
+    AttachSwordToSocket(HandSwordSocket);
+    if (DrawReadyMontage) PlayAnimMontage(DrawReadyMontage);
+    GetWorldTimerManager().SetTimer(WeaponTransitionTimer, this, &ThisClass::FinishDrawSword,
+        DrawReadyDuration, false);
+}
+
+void ASideQuestCharacter::FinishDrawSword()
+{
+    bSwordDrawn = true;
+    bWeaponTransitioning = false;
+    ExecutePendingCombatAction();
+    ScheduleAutoSheathe();
+}
+
+void ASideQuestCharacter::BeginSheatheSword()
+{
+    if (!bSwordDrawn || bWeaponTransitioning || IsDead()) return;
+    bWeaponTransitioning = true;
+    if (SheatheSwordMontage) PlayAnimMontage(SheatheSwordMontage);
+    GetWorldTimerManager().SetTimer(WeaponTransitionTimer, this, &ThisClass::FinishSheatheSwordPlacement,
+        SheatheSwordDuration, false);
+}
+
+void ASideQuestCharacter::FinishSheatheSwordPlacement()
+{
+    AttachSwordToSocket(BackSwordSocket);
+    bSwordDrawn = false;
+    if (SheatheHandDownMontage) PlayAnimMontage(SheatheHandDownMontage);
+    GetWorldTimerManager().SetTimer(WeaponTransitionTimer, this, &ThisClass::FinishSheatheSword,
+        SheatheHandDownDuration, false);
+}
+
+void ASideQuestCharacter::FinishSheatheSword()
+{
+    bWeaponTransitioning = false;
+    if (PendingCombatAction != EPendingCombatAction::None) BeginDrawSword();
+}
+
+void ASideQuestCharacter::ScheduleAutoSheathe()
+{
+    GetWorldTimerManager().ClearTimer(AutoSheatheTimer);
+    if (bSwordDrawn && AutoSheatheDelay > 0.0f)
+        GetWorldTimerManager().SetTimer(AutoSheatheTimer, this, &ThisClass::BeginSheatheSword,
+            AutoSheatheDelay, false);
+}
+
+void ASideQuestCharacter::AttachSwordToSocket(FName SocketName)
+{
+    if (SwordMesh && GetMesh())
+        SwordMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
+}
+
+void ASideQuestCharacter::ExecutePendingCombatAction()
+{
+    const EPendingCombatAction Action = PendingCombatAction;
+    PendingCombatAction = EPendingCombatAction::None;
+    if (Action == EPendingCombatAction::LightAttack) LightAttack();
+    else if (Action == EPendingCombatAction::HeavyAttack) HeavyAttack();
 }
 
 bool ASideQuestCharacter::IsDodging() const
@@ -388,6 +484,7 @@ void ASideQuestCharacter::HandleHealthChanged(UHealthComponent* Component, float
 {
     LastDamageTime = GetWorld()->GetTimeSeconds();
     LastCombatTime = LastDamageTime;
+    if (bSwordDrawn) ScheduleAutoSheathe();
     if (HealthDelta < 0.0f && NewHealth > 0.0f && HitReactMontage)
     {
         PlayAnimMontage(HitReactMontage);
@@ -408,6 +505,10 @@ void ASideQuestCharacter::HandleHealthChanged(UHealthComponent* Component, float
 void ASideQuestCharacter::HandleDeath(UHealthComponent* Component, AActor* DamageCauser)
 {
     StopJumping();
+    GetWorldTimerManager().ClearTimer(WeaponTransitionTimer);
+    GetWorldTimerManager().ClearTimer(AutoSheatheTimer);
+    bWeaponTransitioning = false;
+    PendingCombatAction = EPendingCombatAction::None;
     GetCharacterMovement()->DisableMovement();
     if (DeathMontage)
     {
