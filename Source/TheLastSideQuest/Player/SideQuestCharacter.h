@@ -10,6 +10,7 @@ class UHealthComponent;
 class UInputAction;
 class UInputMappingContext;
 class UAnimMontage;
+class UStaticMeshComponent;
 class USpringArmComponent;
 class AQuestInteractableActor;
 struct FInputActionValue;
@@ -34,6 +35,12 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "Combat")
     bool IsDodging() const;
+
+    UFUNCTION(BlueprintPure, Category = "Combat|Weapon")
+    bool IsSwordDrawn() const { return bSwordDrawn; }
+
+    UFUNCTION(BlueprintPure, Category = "Combat|Weapon")
+    bool IsWeaponTransitioning() const { return bWeaponTransitioning; }
     bool HasAvailableInteraction() const { return IsValid(CurrentInteractable); }
     bool IsInDialogue() const { return DialogueIndex != INDEX_NONE; }
     FText GetCurrentInteractionLabel() const;
@@ -67,6 +74,15 @@ private:
     void HeavyAttack();
     void Dodge();
     void PerformAttack(UAnimMontage* Montage, float Damage, float Cooldown);
+    void BeginDrawSword();
+    void FinishDrawReach();
+    void FinishDrawSword();
+    void BeginSheatheSword();
+    void FinishSheatheSwordPlacement();
+    void FinishSheatheSword();
+    void ScheduleAutoSheathe();
+    void AttachSwordToSocket(FName SocketName);
+    void ExecutePendingCombatAction();
     void RestartAfterDeath();
     void QuitFromCredits();
     void Interact();
@@ -88,6 +104,10 @@ private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UHealthComponent> HealthComponent;
 
+    /** Assign the imported sword mesh in BP_SideQuestCharacter. */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat|Weapon", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UStaticMeshComponent> SwordMesh;
+
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Animation", meta = (AllowPrivateAccess = "true"))
     TArray<TObjectPtr<UAnimMontage>> LightAttackMontages;
 
@@ -102,6 +122,43 @@ private:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Animation", meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UAnimMontage> DeathMontage;
+
+    /** Reach behind the shoulder and close the hand around the still-sheathed sword. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Weapon", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UAnimMontage> DrawReachMontage;
+
+    /** Pull the sword free and bring it down into the two-handed ready pose. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Weapon", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UAnimMontage> DrawReadyMontage;
+
+    /** Move the held sword into the back-mounted sheath. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Weapon", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UAnimMontage> SheatheSwordMontage;
+
+    /** Lower the now-empty hand after the sword has been placed in the sheath. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Weapon", meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UAnimMontage> SheatheHandDownMontage;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Weapon", meta = (AllowPrivateAccess = "true"))
+    FName BackSwordSocket = TEXT("Sword_Back");
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Weapon", meta = (AllowPrivateAccess = "true"))
+    FName HandSwordSocket = TEXT("Sword_Hand");
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Weapon", meta = (AllowPrivateAccess = "true", ClampMin = "0.01"))
+    float DrawReachDuration = 0.55f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Weapon", meta = (AllowPrivateAccess = "true", ClampMin = "0.01"))
+    float DrawReadyDuration = 0.55f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Weapon", meta = (AllowPrivateAccess = "true", ClampMin = "0.01"))
+    float SheatheSwordDuration = 0.7f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Weapon", meta = (AllowPrivateAccess = "true", ClampMin = "0.01"))
+    float SheatheHandDownDuration = 0.4f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Weapon", meta = (AllowPrivateAccess = "true", ClampMin = "0.0"))
+    float AutoSheatheDelay = 4.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true", ClampMin = "0.0"))
     float AttackDamage = 34.0f;
@@ -136,7 +193,13 @@ private:
     float LastLightAttackTime = -100.0f;
     float DodgeEndTime = -100.0f;
     int32 LightComboIndex = 0;
+    enum class EPendingCombatAction : uint8 { None, LightAttack, HeavyAttack };
+    EPendingCombatAction PendingCombatAction = EPendingCombatAction::None;
+    bool bSwordDrawn = false;
+    bool bWeaponTransitioning = false;
     bool bMittensDamageBarkPlayed = false;
+    FTimerHandle WeaponTransitionTimer;
+    FTimerHandle AutoSheatheTimer;
 
     /** Replace these defaults in a presentation Blueprint if different bindings are required. */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
